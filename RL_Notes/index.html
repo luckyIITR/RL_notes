@@ -702,6 +702,556 @@
     </div>
   </div>
 
+  <!-- ── Lecture 6 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 6 — The Q-Function</span>
+    <hr />
+  </div>
+
+  <!-- 25. What is the Q-Function? -->
+  <div class="card">
+    <h2><span class="icon">🎯</span> The State-Action Value Function Q(s, a)</h2>
+    <ul>
+      <li>Also called the <span class="term">Q-function</span> (or <span class="term">Q*</span> / optimal Q-function in the literature).</li>
+      <li>It is a function of a state <em>s</em> and an action <em>a</em>.</li>
+      <li><strong>Q(s, a)</strong> = the return you get if you:
+        <ol style="list-style:decimal; padding-left:1.6rem; margin-top:0.4rem;">
+          <li style="padding-left:0;">Start in state <em>s</em>.</li>
+          <li style="padding-left:0;">Take action <em>a</em> <strong>once</strong>.</li>
+          <li style="padding-left:0;">Then behave <strong>optimally</strong> for all remaining steps.</li>
+        </ol>
+      </li>
+      <li>It places no judgment on whether action <em>a</em> is wise — it faithfully reports the return for that choice followed by optimal play.</li>
+    </ul>
+    <div class="callout">
+      <strong>Note on circularity:</strong> The definition assumes we already know optimal behaviour, which seems circular. In practice, RL algorithms resolve this — Q can be computed iteratively even before the optimal policy is known. This is addressed in later lectures.
+    </div>
+  </div>
+
+  <!-- 26. Computing Q(s,a) on the Mars Rover (γ = 0.5) -->
+  <div class="card">
+    <h2><span class="icon">🔢</span> Computing Q(s, a) — Mars Rover (γ = 0.5)</h2>
+    <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">
+      Optimal policy: go left from S2, S3, S4 — go right from S5. Terminal states S1 (+100) and S6 (+40).
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>Action</th>
+          <th>Reward sequence</th>
+          <th>Return calculation</th>
+          <th>Q(s, a)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">S2</span></td>
+          <td>← Left</td>
+          <td>0, 100</td>
+          <td>0 + 0.5 × 100</td>
+          <td style="color:#4ade80; font-weight:700;">50</td>
+        </tr>
+        <tr>
+          <td><span class="term">S2</span></td>
+          <td>→ Right</td>
+          <td>0, 0, 0, 100</td>
+          <td>0 + 0.5×0 + 0.5²×0 + 0.5³×100</td>
+          <td style="color:#94a3b8;">12.5</td>
+        </tr>
+        <tr>
+          <td><span class="term">S4</span></td>
+          <td>← Left</td>
+          <td>0, 0, 0, 100</td>
+          <td>0 + 0.5×0 + 0.5²×0 + 0.5³×100</td>
+          <td style="color:#4ade80; font-weight:700;">12.5</td>
+        </tr>
+        <tr>
+          <td><span class="term">S4</span></td>
+          <td>→ Right</td>
+          <td>0, 0, 40</td>
+          <td>0 + 0.5×0 + 0.5²×40</td>
+          <td style="color:#94a3b8;">10</td>
+        </tr>
+        <tr>
+          <td><span class="term">S1</span></td>
+          <td>terminal</td>
+          <td>100</td>
+          <td>100</td>
+          <td style="color:#4ade80; font-weight:700;">100</td>
+        </tr>
+        <tr>
+          <td><span class="term">S6</span></td>
+          <td>terminal</td>
+          <td>40</td>
+          <td>40</td>
+          <td style="color:#fb923c; font-weight:700;">40</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Full Q-table -->
+    <p style="color:#94a3b8; font-size:0.85rem; margin: 1rem 0 0.5rem;">Full Q(s, a) table across all states:</p>
+    <table>
+      <thead>
+        <tr><th>State</th><th>Q(s, ←Left)</th><th>Q(s, →Right)</th><th>Best action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="term">S1</span> terminal</td><td colspan="2" style="text-align:center; color:#4ade80; font-weight:700;">100</td><td>—</td></tr>
+        <tr><td><span class="term">S2</span></td><td style="color:#4ade80; font-weight:700;">50</td><td>12.5</td><td>← Left</td></tr>
+        <tr><td><span class="term">S3</span></td><td style="color:#4ade80; font-weight:700;">25</td><td>6.25</td><td>← Left</td></tr>
+        <tr><td><span class="term">S4</span></td><td style="color:#4ade80; font-weight:700;">12.5</td><td>10</td><td>← Left</td></tr>
+        <tr><td><span class="term">S5</span></td><td>6.25</td><td style="color:#4ade80; font-weight:700;">20</td><td>→ Right</td></tr>
+        <tr><td><span class="term">S6</span> terminal</td><td colspan="2" style="text-align:center; color:#fb923c; font-weight:700;">40</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 27. How Q gives us the optimal policy -->
+  <div class="card">
+    <h2><span class="icon">💡</span> How Q(s, a) Gives Us the Optimal Policy</h2>
+    <ul>
+      <li>The <strong>best possible return</strong> from state <em>s</em> is simply the largest Q-value over all actions:</li>
+    </ul>
+
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin:0.8rem 0; font-family:'Courier New', monospace; color:#c7d2fe; font-size:1rem; text-align:center;">
+      max<sub style="font-family:sans-serif;">a</sub> Q(s, a)
+    </div>
+
+    <ul>
+      <li>The <strong>optimal action</strong> to take in state <em>s</em> is the action that achieves this maximum:</li>
+    </ul>
+
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin:0.8rem 0; font-family:'Courier New', monospace; color:#c7d2fe; font-size:1rem; text-align:center;">
+      π(s) = argmax<sub style="font-family:sans-serif;">a</sub> Q(s, a)
+    </div>
+
+    <ul>
+      <li><strong>Example — State 4:</strong> Q(S4, ←) = 12.5 and Q(S4, →) = 10. The max is 12.5, so the optimal action is ← Left.</li>
+      <li><strong>Example — State 5:</strong> Q(S5, ←) = 6.25 and Q(S5, →) = 20. The max is 20, so the optimal action is → Right.</li>
+      <li>This is the payoff of computing Q: once you have it for all (s, a) pairs, reading off the optimal policy is trivial — just pick the action with the highest Q-value at each state.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Why Q is powerful:</strong> Q(s, a) answers "how good is it to take action a right now and then play perfectly?" — so maximising over a naturally surfaces the best first move, which <em>is</em> the optimal policy.
+    </div>
+  </div>
+
+  <!-- 28. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — The Q-Function</h2>
+    <ul>
+      <li><span class="term">Q(s, a)</span> = expected return starting from state <em>s</em>, taking action <em>a</em> once, then acting optimally.</li>
+      <li>Also written <span class="term">Q*</span> or called the <strong>optimal Q-function</strong> in the literature — all the same thing.</li>
+      <li>The optimal policy follows directly: <strong>π(s) = argmax<sub>a</sub> Q(s, a)</strong>.</li>
+      <li>The best possible return from any state = <strong>max<sub>a</sub> Q(s, a)</strong>.</li>
+      <li>The key challenge — and the subject of upcoming lectures — is computing Q(s, a) efficiently without already knowing the optimal policy.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> A concrete look at Q-values across all states, then the algorithm for computing them — the <strong>Bellman equation</strong>.
+    </div>
+  </div>
+
+  <!-- ── Lecture 7 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 7 — How Q(s, a) Changes with Rewards &amp; γ</span>
+    <hr />
+  </div>
+
+  <!-- 29. What changes Q? -->
+  <div class="card">
+    <h2><span class="icon">🧪</span> How Q(s, a) Responds to Parameter Changes</h2>
+    <ul>
+      <li>Q(s, a) and the optimal policy are not fixed — they shift whenever you change the <strong>reward function</strong> or the <strong>discount factor γ</strong>.</li>
+      <li>Two levers to experiment with on the Mars Rover:
+        <ul style="margin-top:0.4rem;">
+          <li>Terminal rewards (left = 100, right = 40 by default)</li>
+          <li>Discount factor γ (default 0.5 in examples)</li>
+        </ul>
+      </li>
+      <li>The optimal policy is always: pick the action with the <strong>larger Q-value</strong> at each state.</li>
+    </ul>
+  </div>
+
+  <!-- 30. Experiment 1 — smaller right reward -->
+  <div class="card">
+    <h2><span class="icon">🔽</span> Experiment 1 — Reduce Right Terminal Reward to 10</h2>
+    <ul>
+      <li>Setup: terminal-left = 100, <strong>terminal-right = 10</strong>, γ = 0.5.</li>
+      <li>From State 5 (one step from the right terminal):
+        <ul style="margin-top:0.3rem;">
+          <li>Q(S5, ←Left) = <strong>6.25</strong> — go left, eventually reach +100.</li>
+          <li>Q(S5, →Right) = <strong>5</strong> — go right, reach +10 immediately.</li>
+        </ul>
+      </li>
+      <li>Even though State 5 is <em>one step</em> from the right terminal, the reward is now so small that going all the way left is better.</li>
+      <li><strong>Optimal policy:</strong> go ← left from <em>every</em> state (including S5).</li>
+    </ul>
+    <div class="callout">
+      <strong>Insight:</strong> Proximity alone doesn't determine the optimal action — the magnitude of the reward matters too. A nearby small reward can be beaten by a distant large one.
+    </div>
+  </div>
+
+  <!-- 31. Experiment 2 — higher gamma (more patient) -->
+  <div class="card">
+    <h2><span class="icon">⏫</span> Experiment 2 — Increase γ to 0.9 (more patient)</h2>
+    <ul>
+      <li>Setup: terminal-left = 100, terminal-right = 40, <strong>γ = 0.9</strong>.</li>
+      <li>A higher γ means future rewards are discounted less — the agent is more <em>patient</em> and willing to travel further for a bigger reward.</li>
+      <li>From State 5:
+        <ul style="margin-top:0.3rem;">
+          <li>Q(S5, ←Left) ≈ <strong>65.61</strong></li>
+          <li>Q(S5, →Right) = 0.9 × 40 = <strong>36</strong></li>
+        </ul>
+      </li>
+      <li><strong>Optimal policy:</strong> go ← left from every state, including S5 — the patient agent prefers the much larger +100 reward even from nearby.</li>
+    </ul>
+    <div class="callout">
+      <strong>Check:</strong> Q(S5, →Right) = γ × 40 = 0.9 × 40 = 36. The one-step discount is only ×0.9, so the right reward barely shrinks — yet the left reward at +100 still dominates.
+    </div>
+  </div>
+
+  <!-- 32. Experiment 3 — very low gamma (very impatient) -->
+  <div class="card">
+    <h2><span class="icon">⏬</span> Experiment 3 — Decrease γ to 0.3 (very impatient)</h2>
+    <ul>
+      <li>Setup: terminal-left = 100, terminal-right = 40, <strong>γ = 0.3</strong>.</li>
+      <li>A very low γ heavily penalises distant rewards — the agent becomes extremely <em>impatient</em>.</li>
+      <li>From State 4: the agent no longer has the patience to travel to +100. The closer +40 reward wins despite being smaller.</li>
+      <li><strong>Optimal policy changes:</strong> from State 4 (and beyond), go → right toward the +40 terminal instead of left toward +100.</li>
+    </ul>
+    <div class="callout">
+      <strong>Insight:</strong> With γ = 0.3, reaching +100 requires three discounting steps (0.3³ = 0.027), so the effective value of +100 from State 4 is tiny. The +40 nearby becomes the rational choice.
+    </div>
+  </div>
+
+  <!-- 33. Summary of experiments -->
+  <div class="card">
+    <h2><span class="icon">📋</span> Summary — What Drives Q and the Optimal Policy</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Change</th>
+          <th>Effect on agent</th>
+          <th>Policy shift at S5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Right reward 40 → <strong>10</strong> (γ=0.5)</td>
+          <td>Smaller nearby reward no longer worth it</td>
+          <td>← Left (was already ← but now even more so)</td>
+        </tr>
+        <tr>
+          <td>γ 0.5 → <strong>0.9</strong></td>
+          <td>More patient; future rewards barely discounted</td>
+          <td>← Left (ignores close +40)</td>
+        </tr>
+        <tr>
+          <td>γ 0.5 → <strong>0.3</strong></td>
+          <td>Very impatient; distant rewards heavily penalised</td>
+          <td>→ Right from S4+ (settles for nearby +40)</td>
+        </tr>
+      </tbody>
+    </table>
+    <ul style="margin-top:1rem;">
+      <li>Both the <strong>reward magnitudes</strong> and <strong>γ</strong> jointly determine Q(s, a) and the optimal policy.</li>
+      <li>The optimal return from any state is always <strong>max<sub>a</sub> Q(s, a)</strong> — the larger of the two Q-values.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> The single most important equation in reinforcement learning — the <strong>Bellman equation</strong> — which gives us a systematic way to compute Q(s, a).
+    </div>
+  </div>
+
+  <!-- ── Lecture 8 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 8 — The Bellman Equation</span>
+    <hr />
+  </div>
+
+  <!-- 34. The Bellman Equation -->
+  <div class="card">
+    <h2><span class="icon">🔔</span> The Bellman Equation</h2>
+    <ul>
+      <li>The key equation in RL for computing Q(s, a).</li>
+      <li>Uses the following notation:
+        <ul style="margin-top:0.4rem;">
+          <li><span class="term">s</span> — current state</li>
+          <li><span class="term">a</span> — current action</li>
+          <li><span class="term">R(s)</span> — reward received at current state (also called the <em>immediate reward</em>)</li>
+          <li><span class="term">s'</span> — next state after taking action <em>a</em></li>
+          <li><span class="term">a'</span> — action taken in the next state s'</li>
+        </ul>
+      </li>
+    </ul>
+
+    <!-- The equation -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1.1rem 1.3rem; margin:1rem 0; text-align:center;">
+      <div style="font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#64748b; margin-bottom:0.6rem;">Bellman Equation</div>
+      <div style="font-family:'Courier New', monospace; color:#c7d2fe; font-size:1.05rem; line-height:2;">
+        Q(s, a) = R(s) + γ · max<sub style="font-family:sans-serif;">a'</sub> Q(s', a')
+      </div>
+    </div>
+
+    <ul>
+      <li><strong>R(s)</strong> — the immediate reward for being in state <em>s</em>.</li>
+      <li><strong>γ · max<sub>a'</sub> Q(s', a')</strong> — the discounted best possible return from the next state s'.</li>
+      <li><strong>Terminal states:</strong> there is no s', so the second term disappears: Q(s, a) = R(s) only.</li>
+    </ul>
+  </div>
+
+  <!-- 35. Worked examples -->
+  <div class="card">
+    <h2><span class="icon">✏️</span> Bellman Equation — Worked Examples (γ = 0.5)</h2>
+
+    <!-- Example 1 -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.9rem;">
+      <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#64748b; margin-bottom:0.6rem;">Q(S2, →Right)</div>
+      <ul>
+        <li>s = S2, a = →Right  →  s' = S3</li>
+        <li>R(S2) = 0</li>
+        <li>Q-values at S3: Q(S3, ←) = 25, Q(S3, →) = 6.25 → max = <strong>25</strong></li>
+      </ul>
+      <div style="font-family:'Courier New', monospace; color:#c7d2fe; margin-top:0.7rem; font-size:0.9rem; line-height:1.9;">
+        Q(S2, →) = 0 + 0.5 × 25 = <strong style="color:#4ade80;">12.5</strong>
+      </div>
+    </div>
+
+    <!-- Example 2 -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.9rem;">
+      <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#64748b; margin-bottom:0.6rem;">Q(S4, ←Left)</div>
+      <ul>
+        <li>s = S4, a = ←Left  →  s' = S3</li>
+        <li>R(S4) = 0</li>
+        <li>Q-values at S3: Q(S3, ←) = 25, Q(S3, →) = 6.25 → max = <strong>25</strong></li>
+      </ul>
+      <div style="font-family:'Courier New', monospace; color:#c7d2fe; margin-top:0.7rem; font-size:0.9rem; line-height:1.9;">
+        Q(S4, ←) = 0 + 0.5 × 25 = <strong style="color:#4ade80;">12.5</strong>
+      </div>
+    </div>
+
+    <!-- Example 3 terminal -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem;">
+      <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#64748b; margin-bottom:0.6rem;">Terminal States (S1, S6)</div>
+      <ul>
+        <li>No next state s' exists → second term drops out.</li>
+      </ul>
+      <div style="font-family:'Courier New', monospace; color:#c7d2fe; margin-top:0.7rem; font-size:0.9rem; line-height:1.9;">
+        Q(S1, any) = R(S1) = <strong style="color:#4ade80;">100</strong><br>
+        Q(S6, any) = R(S6) = <strong style="color:#fb923c;">40</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 36. Intuition behind the Bellman equation -->
+  <div class="card">
+    <h2><span class="icon">🧩</span> Intuition — Two-Part Decomposition</h2>
+    <ul>
+      <li>The total return from state <em>s</em> can always be split into exactly two parts:</li>
+    </ul>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; margin:0.8rem 0;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6366f1; margin-bottom:0.4rem;">Part 1 — Immediate reward</div>
+        <div style="font-family:'Courier New', monospace; color:#c7d2fe; font-size:0.95rem;">R(s)</div>
+        <div style="color:#94a3b8; font-size:0.82rem; margin-top:0.35rem;">R₁ in the reward sequence. You collect this reward simply by being in state <em>s</em>.</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6366f1; margin-bottom:0.4rem;">Part 2 — Discounted future return</div>
+        <div style="font-family:'Courier New', monospace; color:#c7d2fe; font-size:0.95rem;">γ · max<sub style="font-family:sans-serif;">a'</sub> Q(s', a')</div>
+        <div style="color:#94a3b8; font-size:0.82rem; margin-top:0.35rem;">The best return achievable from the next state s', scaled by γ.</div>
+      </div>
+    </div>
+
+    <ul>
+      <li>The full return sequence is: R₁ + γR₂ + γ²R₃ + … = R₁ + γ(R₂ + γR₃ + …)</li>
+      <li>The bracketed part (R₂ + γR₃ + …) is exactly the optimal return starting from s'. This is max<sub>a'</sub> Q(s', a').</li>
+      <li>Hence: <strong>Q(s,a) = R(s) + γ · max<sub>a'</sub> Q(s', a')</strong> — the Bellman equation.</li>
+    </ul>
+
+    <!-- Concrete breakdown -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin-top:0.8rem;">
+      <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; margin-bottom:0.5rem;">Concrete breakdown — Q(S4, ←Left)</div>
+      <div style="font-family:'Courier New', monospace; color:#94a3b8; font-size:0.86rem; line-height:2;">
+        Full return: <span style="color:#c7d2fe;">0</span> + 0.5×<span style="color:#c7d2fe;">0</span> + 0.5²×<span style="color:#c7d2fe;">0</span> + 0.5³×<span style="color:#c7d2fe;">100</span> = 12.5<br>
+        Split:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R(S4) + 0.5 × (optimal return from S3)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = <span style="color:#4ade80;">0</span> + 0.5 × <span style="color:#4ade80;">25</span> = <strong style="color:#4ade80;">12.5</strong>  ✓
+      </div>
+    </div>
+  </div>
+
+  <!-- 37. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — The Bellman Equation</h2>
+    <ul>
+      <li>The Bellman equation gives a recursive way to compute Q(s, a) for any state-action pair.</li>
+      <li>Every Q-value equals the <strong>immediate reward</strong> plus the <strong>discounted best future return</strong>.</li>
+      <li>At terminal states: Q(s, a) = R(s) — no future term.</li>
+      <li>Computing Q via Bellman will be the foundation of the RL algorithm built in subsequent lectures.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> Stochastic MDPs (optional) — where actions have a random effect — then the full RL learning algorithm.
+    </div>
+  </div>
+
+  <!-- ── Lecture 9 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 9 (Optional) — Stochastic Environments</span>
+    <hr />
+  </div>
+
+  <!-- 38. What is a Stochastic Environment? -->
+  <div class="card">
+    <h2><span class="icon">🎲</span> Stochastic Environments</h2>
+    <ul>
+      <li>In practice, actions don't always produce the intended outcome — wind, slippery floors, wheel slip, and rocks can all cause the robot to end up somewhere unexpected.</li>
+      <li>A <span class="term">stochastic environment</span> (or stochastic MDP) models this: taking action <em>a</em> in state <em>s</em> leads to a <em>random</em> next state s'.</li>
+    </ul>
+
+    <!-- Mars Rover stochastic example -->
+    <p style="color:#94a3b8; font-size:0.88rem; margin: 0.9rem 0 0.5rem;">Mars Rover example — command: go ←Left</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.85rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#4ade80; margin-bottom:0.35rem;">90% of the time</div>
+        <div style="color:#cbd5e1; font-size:0.9rem;">Successfully goes left → ends up in <strong>S3</strong></div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.85rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#f87171; margin-bottom:0.35rem;">10% of the time</div>
+        <div style="color:#cbd5e1; font-size:0.9rem;">Slips and goes right → ends up in <strong>S5</strong></div>
+      </div>
+    </div>
+    <ul style="margin-top:0.9rem;">
+      <li>The same holds in reverse: command →Right has a 90% chance of reaching S5 and a 10% chance of reaching S3.</li>
+    </ul>
+  </div>
+
+  <!-- 39. Example Trajectories with Stochasticity -->
+  <div class="card">
+    <h2><span class="icon">🔀</span> Stochastic Trajectories from State 4</h2>
+    <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:0.9rem;">Even with the same policy (←Left from S2–S4, →Right from S5), each episode can unfold differently:</p>
+
+    <div class="trajectory">
+      <div class="traj-label">Lucky run — no slips</div>
+      <div class="traj-steps">
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S3</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S2</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step terminal"><span class="ts-state">S1</span><span class="ts-reward">R=100</span></div>
+      </div>
+    </div>
+
+    <div class="trajectory">
+      <div class="traj-label">One slip — backtracks to S4 from S3</div>
+      <div class="traj-steps">
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S3</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S3</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S2</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step terminal"><span class="ts-state">S1</span><span class="ts-reward">R=100</span></div>
+      </div>
+    </div>
+
+    <div class="trajectory">
+      <div class="traj-label">Unlucky — slips right on first step, ends at S6</div>
+      <div class="traj-steps">
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S5</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step terminal" style="border-color:#fb923c"><span class="ts-state" style="color:#fb923c">S6</span><span class="ts-reward" style="color:#fb923c">R=40</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 40. Expected Return -->
+  <div class="card">
+    <h2><span class="icon">📐</span> The Goal: Maximise Expected Return</h2>
+    <ul>
+      <li>Because the return is now a random number, we can't simply maximise it — it changes every episode.</li>
+      <li>Instead, the goal becomes maximising the <span class="term">expected return</span>: the average sum of discounted rewards over many episodes.</li>
+      <li>In statistics, "expected value" = average. The notation is:</li>
+    </ul>
+
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.3rem; margin:0.8rem 0; text-align:center;">
+      <div style="font-family:'Courier New', monospace; color:#c7d2fe; font-size:1rem; line-height:2;">
+        Maximise  𝔼[ R₁ + γR₂ + γ²R₃ + … ]
+      </div>
+      <div style="color:#64748b; font-size:0.8rem; margin-top:0.3rem;">𝔼 = expected value (average over all possible random trajectories)</div>
+    </div>
+
+    <ul>
+      <li>The policy π(s) is chosen to maximise this expectation.</li>
+      <li>Effect of stochasticity on Q-values: because the rover sometimes goes the wrong way, <strong>Q-values decrease</strong> — you have less control, so the best achievable return is lower.</li>
+      <li>Higher misstep probability → lower Q-values and lower optimal expected return.</li>
+    </ul>
+  </div>
+
+  <!-- 41. Stochastic Bellman Equation -->
+  <div class="card">
+    <h2><span class="icon">🔔</span> Bellman Equation — Stochastic Version</h2>
+    <ul>
+      <li>The structure is the same, but the next state s' is now random, so we take an <em>expectation</em> over it:</li>
+    </ul>
+
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1.1rem 1.3rem; margin:0.9rem 0; text-align:center;">
+      <div style="font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#64748b; margin-bottom:0.6rem;">Stochastic Bellman Equation</div>
+      <div style="font-family:'Courier New', monospace; color:#c7d2fe; font-size:1rem; line-height:2;">
+        Q(s, a) = R(s) + γ · 𝔼[ max<sub style="font-family:sans-serif;">a'</sub> Q(s', a') ]
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th></th><th>Deterministic</th><th>Stochastic</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Next state s'</td>
+          <td>Fixed — determined by (s, a)</td>
+          <td>Random — drawn from a distribution</td>
+        </tr>
+        <tr>
+          <td>Future return term</td>
+          <td>γ · max<sub>a'</sub> Q(s', a')</td>
+          <td>γ · 𝔼[ max<sub>a'</sub> Q(s', a') ]</td>
+        </tr>
+        <tr>
+          <td>Optimisation goal</td>
+          <td>Maximise return</td>
+          <td>Maximise <em>expected</em> return</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 42. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — Stochastic MDPs</h2>
+    <ul>
+      <li>A <span class="term">stochastic MDP</span> models real-world uncertainty: actions may not produce the commanded result.</li>
+      <li>The return is now a random variable — the goal shifts to maximising the <strong>expected</strong> (average) discounted return.</li>
+      <li>The Bellman equation gains an expectation operator 𝔼 over the random next state s'.</li>
+      <li>Higher randomness → lower Q-values, because reduced control means the best reachable return is lower.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> Generalising to <strong>continuous state spaces</strong> — where the number of possible states is far larger, enabling richer real-world applications.
+    </div>
+  </div>
+
   <footer>
     Machine Learning Specialization · Reinforcement Learning Week · Notes compiled March 2026
   </footer>
