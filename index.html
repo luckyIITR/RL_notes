@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reinforcement Learning — Lecture Notes</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      border-left: 4px solid #6366f1;
+      padding-left: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+    header .tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 0.4rem;
+    }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 0.3rem;
+    }
+    header p.subtitle {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    /* ── Section cards ── */
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 1.6rem 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #a5b4fc;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 1rem;
+    }
+    .card h2 .icon {
+      font-size: 1.15rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      position: relative;
+      padding-left: 1.3rem;
+      margin-bottom: 0.55rem;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+    ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: #6366f1;
+    }
+
+    /* ── Key term pills ── */
+    .term {
+      display: inline-block;
+      background: #2d3148;
+      color: #a5b4fc;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 6px;
+      margin: 0 2px;
+      border: 1px solid #3d4270;
+    }
+
+    /* ── Reward box ── */
+    .reward-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .reward-item {
+      background: #151823;
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      border: 1px solid #2d3148;
+      font-size: 0.9rem;
+    }
+    .reward-item .label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .good .label { color: #4ade80; }
+    .bad  .label { color: #f87171; }
+    .reward-item .value {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .good .value { color: #4ade80; }
+    .bad  .value { color: #f87171; }
+
+    /* ── Applications grid ── */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.8rem;
+      margin-top: 0.4rem;
+    }
+    .app-item {
+      background: #151823;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .app-item .emoji { font-size: 1.2rem; }
+
+    /* ── Callout ── */
+    .callout {
+      background: #1a1d2e;
+      border-left: 3px solid #6366f1;
+      border-radius: 0 8px 8px 0;
+      padding: 0.9rem 1.1rem;
+      margin-top: 0.8rem;
+      font-size: 0.92rem;
+      color: #a5b4fc;
+    }
+    .callout strong { color: #c7d2fe; }
+
+    /* ── Comparison table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.6rem;
+    }
+    th {
+      background: #151823;
+      color: #a5b4fc;
+      font-weight: 700;
+      padding: 0.65rem 0.9rem;
+      text-align: left;
+      border-bottom: 2px solid #2d3148;
+    }
+    td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid #1e2130;
+      color: #cbd5e1;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1a1e30; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: #475569;
+      font-size: 0.8rem;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e2130;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="tag">Machine Learning Specialization · Final Week</div>
+    <h1>Introduction to Reinforcement Learning</h1>
+    <p class="subtitle">Lecture notes · March 2026</p>
+  </header>
+
+  <!-- 1. What is RL? -->
+  <div class="card">
+    <h2><span class="icon">🧠</span> What is Reinforcement Learning?</h2>
+    <ul>
+      <li>A major pillar of machine learning alongside supervised and unsupervised learning.</li>
+      <li>Not as widely deployed commercially yet, but has strong and growing research support.</li>
+      <li>Core idea: instead of telling the algorithm the <em>correct answer</em> for every input, you specify a <span class="term">reward function</span> that signals when it is doing well or poorly.</li>
+      <li>The algorithm's job is to automatically figure out how to take <em>good actions</em> to maximise rewards over time.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key insight:</strong> You tell the system <em>what</em> to achieve, not <em>how</em> to achieve it. This flexibility is what makes RL powerful.
+    </div>
+  </div>
+
+  <!-- 2. Motivating Example -->
+  <div class="card">
+    <h2><span class="icon">🚁</span> Motivating Example — Autonomous Helicopter</h2>
+    <ul>
+      <li>Stanford autonomous helicopter: 32 lbs, equipped with onboard computer, GPS, accelerometers, gyroscopes, and a magnetic compass.</li>
+      <li>Task: 10 times per second, given current position/orientation/speed, decide how to move the two control sticks.</li>
+      <li>Radio-controlled helicopters are significantly harder to keep balanced than quadrotors.</li>
+      <li>Using RL, the helicopter learned to perform aerobatic maneuvers — including <strong>flying upside down</strong>.</li>
+    </ul>
+  </div>
+
+  <!-- 3. Core Terminology -->
+  <div class="card">
+    <h2><span class="icon">📖</span> Core Terminology</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>Definition</th>
+          <th>Helicopter Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">State (s)</span></td>
+          <td>All information describing the current situation of the agent.</td>
+          <td>Position, orientation, speed of the helicopter.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Action (a)</span></td>
+          <td>A decision/move taken by the agent in a given state.</td>
+          <td>How far to push each control stick.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Reward</span></td>
+          <td>A scalar signal indicating how good or bad the action/outcome was.</td>
+          <td>+1/sec when flying well; −1000 on crash.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Policy (π)</span></td>
+          <td>A function mapping states to actions — what the agent has learned.</td>
+          <td>The trained mapping s → a that keeps the helicopter airborne.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. Why Not Supervised Learning? -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Why Not Supervised Learning?</h2>
+    <ul>
+      <li>You could in principle collect states (x) and ask an expert pilot for the best action (y), then train a neural network with supervised learning.</li>
+      <li><strong>Problem:</strong> In continuous control tasks, the "correct" action is highly ambiguous — tilt a little left? A lot left? Increase throttle a little or a lot?</li>
+      <li>It is very difficult to collect a clean dataset of ideal (state → action) pairs for robotics tasks.</li>
+      <li>Reinforcement learning avoids this by only requiring a <span class="term">reward signal</span>, not labelled optimal actions.</li>
+    </ul>
+  </div>
+
+  <!-- 5. Reward Function -->
+  <div class="card">
+    <h2><span class="icon">🏆</span> The Reward Function</h2>
+    <ul>
+      <li>Analogous to training a dog: you can't demonstrate every desired behaviour, so you reward good behaviour and penalise bad behaviour.</li>
+      <li>The RL algorithm figures out, on its own, how to get more rewards and avoid penalties.</li>
+    </ul>
+    <div class="reward-grid">
+      <div class="reward-item good">
+        <div class="label">Flying well (per second)</div>
+        <div class="value">+1</div>
+        <div style="font-size:0.82rem; color:#86efac; margin-top:0.25rem;">Incentivises sustained good flight</div>
+      </div>
+      <div class="reward-item bad">
+        <div class="label">Crash</div>
+        <div class="value">−1,000</div>
+        <div style="font-size:0.82rem; color:#fca5a5; margin-top:0.25rem;">Large penalty to strongly discourage crashes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Applications -->
+  <div class="card">
+    <h2><span class="icon">🌍</span> Real-World Applications</h2>
+    <div class="app-grid">
+      <div class="app-item"><span class="emoji">🤖</span> Robot control</div>
+      <div class="app-item"><span class="emoji">🏭</span> Factory optimisation</div>
+      <div class="app-item"><span class="emoji">📈</span> Stock trading / execution</div>
+      <div class="app-item"><span class="emoji">♟️</span> Games (Chess, Go, Bridge)</div>
+      <div class="app-item"><span class="emoji">🎮</span> Video games</div>
+      <div class="app-item"><span class="emoji">🌕</span> Lunar lander (practice lab)</div>
+    </div>
+    <ul style="margin-top:1rem;">
+      <li><strong>Stock execution:</strong> Selling 1M shares gradually over several days to avoid moving the market price against you.</li>
+      <li><strong>Robot locomotion:</strong> A robot dog learned to climb over obstacles solely by being rewarded for making progress — no explicit leg-placement instructions needed.</li>
+    </ul>
+  </div>
+
+  <!-- 7. Key Takeaways -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Key Takeaways</h2>
+    <ul>
+      <li>RL is less widely deployed than supervised learning today, but is a critical and fast-growing area of ML research.</li>
+      <li>You do <strong>not</strong> need to specify the correct action for every state — only a reward signal.</li>
+      <li>The power of RL is in its generality: specify <em>what</em> success looks like, and the agent discovers <em>how</em> to achieve it.</li>
+      <li>Next steps: formalise the RL problem mathematically and develop algorithms for automatically selecting good actions.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> Formalising the RL framework (MDPs, returns, Q-functions) and building algorithms to automatically pick good actions.
+    </div>
+  </div>
+
+  <footer>
+    Machine Learning Specialization · Reinforcement Learning Week · Notes compiled March 2026
+  </footer>
+
+</div>
+</body>
+</html>
