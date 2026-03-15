@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reinforcement Learning — Lecture Notes</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+<div class="container">
+
+  <header class="notes-header">
+    <div class="tag">Machine Learning Specialization · Final Week</div>
+    <h1>Introduction to Reinforcement Learning</h1>
+    <p class="subtitle">Lecture notes · March 2026</p>
+  </header>
+
+  <!-- 1. What is RL? -->
+  <div class="card">
+    <h2><span class="icon">🧠</span> What is Reinforcement Learning?</h2>
+    <ul>
+      <li>A major pillar of machine learning alongside supervised and unsupervised learning.</li>
+      <li>Not as widely deployed commercially yet, but has strong and growing research support.</li>
+      <li>Core idea: instead of telling the algorithm the <em>correct answer</em> for every input, you specify a <span class="term">reward function</span> that signals when it is doing well or poorly.</li>
+      <li>The algorithm's job is to automatically figure out how to take <em>good actions</em> to maximise rewards over time.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key insight:</strong> You tell the system <em>what</em> to achieve, not <em>how</em> to achieve it. This flexibility is what makes RL powerful.
+    </div>
+  </div>
+
+  <!-- 2. Motivating Example -->
+  <div class="card">
+    <h2><span class="icon">🚁</span> Motivating Example — Autonomous Helicopter</h2>
+    <ul>
+      <li>Stanford autonomous helicopter: 32 lbs, equipped with onboard computer, GPS, accelerometers, gyroscopes, and a magnetic compass.</li>
+      <li>Task: 10 times per second, given current position/orientation/speed, decide how to move the two control sticks.</li>
+      <li>Radio-controlled helicopters are significantly harder to keep balanced than quadrotors.</li>
+      <li>Using RL, the helicopter learned to perform aerobatic maneuvers — including <strong>flying upside down</strong>.</li>
+    </ul>
+  </div>
+
+  <!-- 3. Core Terminology -->
+  <div class="card">
+    <h2><span class="icon">📖</span> Core Terminology</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>Definition</th>
+          <th>Helicopter Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">State (s)</span></td>
+          <td>All information describing the current situation of the agent.</td>
+          <td>Position, orientation, speed of the helicopter.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Action (a)</span></td>
+          <td>A decision/move taken by the agent in a given state.</td>
+          <td>How far to push each control stick.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Reward</span></td>
+          <td>A scalar signal indicating how good or bad the action/outcome was.</td>
+          <td>+1/sec when flying well; −1000 on crash.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Policy (π)</span></td>
+          <td>A function mapping states to actions — what the agent has learned.</td>
+          <td>The trained mapping s → a that keeps the helicopter airborne.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. Why Not Supervised Learning? -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Why Not Supervised Learning?</h2>
+    <ul>
+      <li>You could in principle collect states (x) and ask an expert pilot for the best action (y), then train a neural network with supervised learning.</li>
+      <li><strong>Problem:</strong> In continuous control tasks, the "correct" action is highly ambiguous — tilt a little left? A lot left? Increase throttle a little or a lot?</li>
+      <li>It is very difficult to collect a clean dataset of ideal (state → action) pairs for robotics tasks.</li>
+      <li>Reinforcement learning avoids this by only requiring a <span class="term">reward signal</span>, not labelled optimal actions.</li>
+    </ul>
+  </div>
+
+  <!-- 5. Reward Function -->
+  <div class="card">
+    <h2><span class="icon">🏆</span> The Reward Function</h2>
+    <ul>
+      <li>Analogous to training a dog: you can't demonstrate every desired behaviour, so you reward good behaviour and penalise bad behaviour.</li>
+      <li>The RL algorithm figures out, on its own, how to get more rewards and avoid penalties.</li>
+    </ul>
+    <div class="reward-grid">
+      <div class="reward-item good">
+        <div class="label">Flying well (per second)</div>
+        <div class="value">+1</div>
+        <div style="font-size:0.82rem; color:#86efac; margin-top:0.25rem;">Incentivises sustained good flight</div>
+      </div>
+      <div class="reward-item bad">
+        <div class="label">Crash</div>
+        <div class="value">−1,000</div>
+        <div style="font-size:0.82rem; color:#fca5a5; margin-top:0.25rem;">Large penalty to strongly discourage crashes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Applications -->
+  <div class="card">
+    <h2><span class="icon">🌍</span> Real-World Applications</h2>
+    <div class="app-grid">
+      <div class="app-item"><span class="emoji">🤖</span> Robot control</div>
+      <div class="app-item"><span class="emoji">🏭</span> Factory optimisation</div>
+      <div class="app-item"><span class="emoji">📈</span> Stock trading / execution</div>
+      <div class="app-item"><span class="emoji">♟️</span> Games (Chess, Go, Bridge)</div>
+      <div class="app-item"><span class="emoji">🎮</span> Video games</div>
+      <div class="app-item"><span class="emoji">🌕</span> Lunar lander (practice lab)</div>
+    </div>
+    <ul style="margin-top:1rem;">
+      <li><strong>Stock execution:</strong> Selling 1M shares gradually over several days to avoid moving the market price against you.</li>
+      <li><strong>Robot locomotion:</strong> A robot dog learned to climb over obstacles solely by being rewarded for making progress — no explicit leg-placement instructions needed.</li>
+    </ul>
+  </div>
+
+  <!-- 7. Key Takeaways (Lecture 1) -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Key Takeaways</h2>
+    <ul>
+      <li>RL is less widely deployed than supervised learning today, but is a critical and fast-growing area of ML research.</li>
+      <li>You do <strong>not</strong> need to specify the correct action for every state — only a reward signal.</li>
+      <li>The power of RL is in its generality: specify <em>what</em> success looks like, and the agent discovers <em>how</em> to achieve it.</li>
+      <li>Next steps: formalise the RL problem mathematically and develop algorithms for automatically selecting good actions.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> Formalising the RL framework (MDPs, returns, Q-functions) and building algorithms to automatically pick good actions.
+    </div>
+  </div>
+
+  <!-- ── Lecture 2 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 2 — The RL Formalism</span>
+    <hr />
+  </div>
+
+  <!-- 8. Mars Rover Example -->
+  <div class="card">
+    <h2><span class="icon">🔴</span> The Mars Rover — A Simplified RL Environment</h2>
+    <ul>
+      <li>A concrete, tractable example inspired by the actual Mars rover (collaborators: Stanford Prof. Emma Branskill & Jagriti Agrawal, who wrote code for the real rover).</li>
+      <li>The rover can occupy one of <strong>6 discrete positions (states)</strong>.</li>
+      <li>At each step it chooses one of two <strong>actions</strong>: move <em>left</em> or move <em>right</em>.</li>
+      <li>The rover starts in <strong>State 4</strong> in this example.</li>
+    </ul>
+
+    <!-- State diagram -->
+    <div class="rover-track">
+      <div class="rover-state terminal-left">
+        <div class="s-label">State</div>
+        <div class="s-num">1</div>
+        <div class="s-reward">+100</div>
+        <div class="s-tag">Terminal</div>
+      </div>
+      <div class="rover-state">
+        <div class="s-label">State</div>
+        <div class="s-num">2</div>
+        <div class="s-reward zero">0</div>
+      </div>
+      <div class="rover-state">
+        <div class="s-label">State</div>
+        <div class="s-num">3</div>
+        <div class="s-reward zero">0</div>
+      </div>
+      <div class="rover-state current">
+        <div class="s-label">State</div>
+        <div class="s-num">4</div>
+        <div class="s-reward zero">0</div>
+        <div class="s-tag">Start</div>
+      </div>
+      <div class="rover-state">
+        <div class="s-label">State</div>
+        <div class="s-num">5</div>
+        <div class="s-reward zero">0</div>
+      </div>
+      <div class="rover-state terminal-right">
+        <div class="s-label">State</div>
+        <div class="s-num">6</div>
+        <div class="s-reward">+40</div>
+        <div class="s-tag">Terminal</div>
+      </div>
+    </div>
+    <ul style="margin-top:0.9rem;">
+      <li><strong>State 1</strong> — most scientifically interesting surface; reward = <strong>100</strong>. Further away, but worth more.</li>
+      <li><strong>State 6</strong> — less interesting, but closer; reward = <strong>40</strong>.</li>
+      <li><strong>States 2–5</strong> — intermediate; reward = <strong>0</strong> (no significant science).</li>
+    </ul>
+  </div>
+
+  <!-- 9. Terminal States -->
+  <div class="card">
+    <h2><span class="icon">🏁</span> Terminal States</h2>
+    <ul>
+      <li>States 1 and 6 are <span class="term">terminal states</span> — the episode ends once the rover reaches either of them.</li>
+      <li>The rover collects the reward at the terminal state, then nothing further happens (e.g., the rover runs out of fuel or the day ends).</li>
+      <li>No additional rewards can be earned after a terminal state is reached.</li>
+    </ul>
+    <div class="callout">
+      <strong>Intuition:</strong> Terminal states are like the end of a game. You get your final score, and the episode resets for the next round.
+    </div>
+  </div>
+
+  <!-- 10. Example Trajectories -->
+  <div class="card">
+    <h2><span class="icon">📍</span> Example Trajectories from State 4</h2>
+
+    <div class="trajectory">
+      <div class="traj-label">Option A — Go left all the way (optimal)</div>
+      <div class="traj-steps">
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S3</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S2</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step terminal"><span class="ts-state">S1</span><span class="ts-reward">R=100</span></div>
+      </div>
+    </div>
+
+    <div class="trajectory">
+      <div class="traj-label">Option B — Go right (shorter, but less reward)</div>
+      <div class="traj-steps">
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S5</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step terminal" style="border-color:#fb923c"><span class="ts-state" style="color:#fb923c">S6</span><span class="ts-reward" style="color:#fb923c">R=40</span></div>
+      </div>
+    </div>
+
+    <div class="trajectory">
+      <div class="traj-label">Option C — Wander right then left (suboptimal, wastes steps)</div>
+      <div class="traj-steps">
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S5</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S4</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S3</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step"><span class="ts-state">S2</span><span class="ts-reward">R=0</span></div>
+        <div class="traj-arrow">→</div>
+        <div class="traj-step terminal"><span class="ts-state">S1</span><span class="ts-reward">R=100</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. The RL Tuple -->
+  <div class="card">
+    <h2><span class="icon">🔢</span> The Core RL Tuple: (S, A, R, S')</h2>
+    <ul>
+      <li>At every time step, the interaction between agent and environment can be summarised by four things:</li>
+    </ul>
+    <table style="margin-top:0.6rem;">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Name</th>
+          <th>Rover Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">S</span></td>
+          <td>Current state</td>
+          <td>Rover is in position 4</td>
+        </tr>
+        <tr>
+          <td><span class="term">A</span></td>
+          <td>Action taken</td>
+          <td>Move left</td>
+        </tr>
+        <tr>
+          <td><span class="term">R(S)</span></td>
+          <td>Reward received at current state</td>
+          <td>R(4) = 0</td>
+        </tr>
+        <tr>
+          <td><span class="term">S'</span></td>
+          <td>Next state (result of action)</td>
+          <td>Rover arrives at position 3</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Note:</strong> The reward <em>R(S)</em> belongs to the <em>current</em> state, not the next state. When the rover leaves State 4 heading left, the reward of 0 is credited to State 4.
+    </div>
+  </div>
+
+  <!-- 12. What's Next (now answered below) -->
+
+  <!-- ── Lecture 3 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 3 — The Return &amp; Discount Factor</span>
+    <hr />
+  </div>
+
+  <!-- 13. What is the Return? -->
+  <div class="card">
+    <h2><span class="icon">💰</span> What is the Return?</h2>
+    <ul>
+      <li>The <span class="term">Return</span> answers: "is this sequence of rewards better or worse than another?" — it gives a single number to compare action sequences.</li>
+      <li><strong>Analogy:</strong> A $5 bill at your feet vs. a $10 bill half an hour away. $10 &gt; $5, but the effort (time) makes the closer reward more attractive. The return captures this preference for <em>sooner rewards</em>.</li>
+      <li>Formally, the return is the <strong>discounted sum of all future rewards</strong> from the current time step until the terminal state.</li>
+    </ul>
+
+    <!-- Formula display -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin-top:0.9rem; font-size:0.92rem;">
+      <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#64748b; margin-bottom:0.6rem;">General Formula</div>
+      <div style="font-family: 'Courier New', monospace; color:#c7d2fe; font-size:1rem; line-height:1.9;">
+        Return = R<sub>1</sub> + γ·R<sub>2</sub> + γ²·R<sub>3</sub> + γ³·R<sub>4</sub> + …
+      </div>
+      <div style="margin-top:0.6rem; color:#94a3b8; font-size:0.85rem;">
+        where <strong style="color:#a5b4fc;">γ (gamma)</strong> is the discount factor, a number slightly less than 1 (e.g. 0.9, 0.99, 0.999).
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. Discount Factor -->
+  <div class="card">
+    <h2><span class="icon">⏳</span> The Discount Factor (γ)</h2>
+    <ul>
+      <li>γ is a number in (0, 1). Each additional time step multiplies the reward by another factor of γ, so <em>rewards further in the future are worth less</em>.</li>
+      <li>This makes the RL algorithm <strong>impatient</strong> — it prefers collecting rewards sooner rather than later.</li>
+      <li>R₁ gets full credit (×1), R₂ gets ×γ, R₃ gets ×γ², and so on.</li>
+      <li>Common practical values: <span class="term">γ = 0.99</span> or <span class="term">γ = 0.999</span> (mild discounting). For illustration, γ = 0.5 is used here (heavy discounting).</li>
+    </ul>
+
+    <!-- γ comparison -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-top:0.8rem;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.85rem 1rem;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; margin-bottom:0.4rem;">γ = 0.9  (mild)</div>
+        <div style="font-family:monospace; color:#c7d2fe; font-size:0.88rem; line-height:1.8;">
+          0 + 0.9×0 + 0.9²×0 + 0.9³×100<br>
+          = <strong style="color:#4ade80;">72.9</strong>
+        </div>
+        <div style="font-size:0.78rem; color:#94a3b8; margin-top:0.3rem;">Going left from State 4</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.85rem 1rem;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; margin-bottom:0.4rem;">γ = 0.5  (heavy)</div>
+        <div style="font-family:monospace; color:#c7d2fe; font-size:0.88rem; line-height:1.8;">
+          0 + 0.5×0 + 0.5²×0 + 0.5³×100<br>
+          = <strong style="color:#4ade80;">12.5</strong>
+        </div>
+        <div style="font-size:0.78rem; color:#94a3b8; margin-top:0.3rem;">Same path, discounted more</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:0.9rem;">
+      <strong>Financial analogy:</strong> γ is like an interest rate. A dollar today is worth more than a dollar in the future because you can invest it. For negative rewards (debts), discounting means it's better to delay paying — the RL algorithm will naturally push negative rewards as far into the future as possible.
+    </div>
+  </div>
+
+  <!-- 15. Return tables for different policies -->
+  <div class="card">
+    <h2><span class="icon">📊</span> Returns Under Different Policies (γ = 0.5)</h2>
+    <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:0.9rem;">The return depends on the actions you take (your <span class="term">policy</span>). Here are three example policies:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Start State</th>
+          <th>Always Go Left</th>
+          <th>Always Go Right</th>
+          <th>Left except S5→Right</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">S1</span> (terminal)</td>
+          <td style="color:#4ade80; font-weight:700;">100</td>
+          <td style="color:#4ade80; font-weight:700;">100</td>
+          <td style="color:#4ade80; font-weight:700;">100</td>
+        </tr>
+        <tr>
+          <td><span class="term">S2</span></td>
+          <td>50</td>
+          <td>5</td>
+          <td>50</td>
+        </tr>
+        <tr>
+          <td><span class="term">S3</span></td>
+          <td>25</td>
+          <td>2.5</td>
+          <td>25</td>
+        </tr>
+        <tr>
+          <td><span class="term">S4</span></td>
+          <td>12.5</td>
+          <td>10</td>
+          <td>12.5</td>
+        </tr>
+        <tr>
+          <td><span class="term">S5</span></td>
+          <td>6.25</td>
+          <td>20</td>
+          <td style="color:#fb923c; font-weight:700;">20</td>
+        </tr>
+        <tr>
+          <td><span class="term">S6</span> (terminal)</td>
+          <td style="color:#fb923c; font-weight:700;">40</td>
+          <td style="color:#fb923c; font-weight:700;">40</td>
+          <td style="color:#fb923c; font-weight:700;">40</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ul style="margin-top:1rem;">
+      <li><strong>Always go left</strong> — best for S2, S3, S4 (big reward but takes more steps from right side).</li>
+      <li><strong>Always go right</strong> — best from S5 (only 1 step to the +40 terminal), but poor for all other states.</li>
+      <li><strong>Mixed policy</strong> (left everywhere, right from S5) — gets the best of both: S5 returns 20, all others match "always left". This is the <em>optimal policy</em> for this setup.</li>
+    </ul>
+    <div class="callout">
+      <strong>Worked example (S5 → right, γ=0.5):</strong><br>
+      Return = R(S5) + γ·R(S6) = 0 + 0.5 × 40 = <strong>20</strong>
+    </div>
+  </div>
+
+  <!-- 16. Negative Rewards & Discounting -->
+  <div class="card">
+    <h2><span class="icon">📉</span> Negative Rewards &amp; Discounting</h2>
+    <ul>
+      <li>All rewards in the rover example were ≥ 0, but real environments often have <strong>negative rewards</strong> (penalties).</li>
+      <li>When rewards are negative, the discount factor incentivises the agent to <em>delay</em> negative rewards as long as possible.</li>
+      <li><strong>Financial analogy:</strong> If you owe someone $10, it's better to pay later (future dollars are worth less due to interest).</li>
+      <li>This behaviour — avoiding or deferring negative outcomes — is often exactly the right thing for the system to do.</li>
+    </ul>
+  </div>
+
+  <!-- 17. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — The Return</h2>
+    <ul>
+      <li>The <span class="term">Return</span> = weighted sum of all rewards along a trajectory, with discount factor γ applied at each step.</li>
+      <li>γ &lt; 1 makes the algorithm prefer <em>sooner rewards</em>; γ close to 1 means future rewards are almost as valuable as immediate ones.</li>
+      <li>Different action sequences (policies) produce different returns — the goal of RL is to find the policy that <strong>maximises the return</strong>.</li>
+      <li>For negative rewards, discounting naturally encourages deferring them as far into the future as possible.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> Formalising the <strong>goal</strong> of the RL algorithm — finding a <span class="term">policy π</span> that maximises the expected return from every state.
+    </div>
+  </div>
+
+  <!-- ── Lecture 4 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 4 — Policies</span>
+    <hr />
+  </div>
+
+  <!-- 18. What is a Policy? -->
+  <div class="card">
+    <h2><span class="icon">🗺️</span> What is a Policy?</h2>
+    <ul>
+      <li>A <span class="term">policy π</span> is a function that maps every state <em>s</em> to an action <em>a</em>: <strong>π(s) = a</strong>.</li>
+      <li>It is the "brain" of the agent — given any situation, it tells the agent exactly what to do.</li>
+      <li>Also called a <em>controller</em> in some communities; "policy" is the standard RL term.</li>
+      <li><strong>Goal of RL:</strong> find the policy π that maximises the return from every state.</li>
+    </ul>
+    <div class="callout">
+      <strong>In one sentence:</strong> A policy is a complete decision rule — it doesn't just say what to do now, it specifies an action for <em>every possible state</em> the agent could ever be in.
+    </div>
+  </div>
+
+  <!-- 19. Example Policies on the Mars Rover -->
+  <div class="card">
+    <h2><span class="icon">🔄</span> Example Policies on the Mars Rover</h2>
+    <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">Many different policies are possible. Here are four, listed from naive to optimal:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Policy</th>
+          <th>Rule</th>
+          <th>S2</th>
+          <th>S3</th>
+          <th>S4</th>
+          <th>S5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Go for nearer reward</td>
+          <td>Left if S1 is closer, right if S6 is closer</td>
+          <td>←</td><td>←</td><td>→</td><td>→</td>
+        </tr>
+        <tr>
+          <td>Always go for larger reward</td>
+          <td>Always left (S1 = 100 &gt; S6 = 40)</td>
+          <td>←</td><td>←</td><td>←</td><td>←</td>
+        </tr>
+        <tr>
+          <td>Always go for smaller reward</td>
+          <td>Always right (not recommended!)</td>
+          <td>→</td><td>→</td><td>→</td><td>→</td>
+        </tr>
+        <tr style="background:#1a2230;">
+          <td><strong>Optimal (mixed)</strong></td>
+          <td>Left everywhere, but right from S5</td>
+          <td><strong>←</strong></td><td><strong>←</strong></td><td><strong>←</strong></td><td><strong>→</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ul style="margin-top:1rem;">
+      <li>The optimal policy switches to <strong>right at S5</strong> because the +40 reward is only one step away — discounting makes it worth more than the distant +100.</li>
+      <li>Every row in the table above is a valid policy. RL's job is to discover the <em>best</em> one automatically.</li>
+    </ul>
+  </div>
+
+  <!-- 20. Full RL Concept Map -->
+  <div class="card">
+    <h2><span class="icon">🗂️</span> Full RL Concept Map — Review</h2>
+    <table>
+      <thead>
+        <tr><th>Concept</th><th>Symbol</th><th>What it is</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">State</span></td>
+          <td><em>s</em></td>
+          <td>A description of the agent's current situation in the environment.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Action</span></td>
+          <td><em>a</em></td>
+          <td>A choice the agent makes in a given state.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Reward</span></td>
+          <td><em>R(s)</em></td>
+          <td>Scalar feedback signal received at each state.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Return</span></td>
+          <td><em>G</em></td>
+          <td>Discounted sum of all future rewards: R₁ + γR₂ + γ²R₃ + …</td>
+        </tr>
+        <tr>
+          <td><span class="term">Discount factor</span></td>
+          <td><em>γ</em></td>
+          <td>Number in (0,1) that down-weights rewards further in the future.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Policy</span></td>
+          <td><em>π(s)</em></td>
+          <td>A function mapping every state to an action. The agent's complete strategy.</td>
+        </tr>
+        <tr>
+          <td><span class="term">Terminal state</span></td>
+          <td>—</td>
+          <td>A state that ends the episode; no further rewards are earned after it.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Coming up:</strong> Developing algorithms that automatically search for and find the <strong>optimal policy</strong> — the one that maximises the return from every state.
+    </div>
+  </div>
+
+  <!-- ── Lecture 5 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 5 — MDP Formalism &amp; Review</span>
+    <hr />
+  </div>
+
+  <!-- 21. RL Formalism Across Applications -->
+  <div class="card">
+    <h2><span class="icon">🔁</span> The Same Formalism Applies Everywhere</h2>
+    <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">The (State, Action, Reward, Discount, Return, Policy) framework is universal. Here's how it maps to three different problems:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>🔴 Mars Rover</th>
+          <th>🚁 Helicopter</th>
+          <th>♟️ Chess</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">States</span></td>
+          <td>6 positions (1–6)</td>
+          <td>Position, orientation, speed</td>
+          <td>All piece positions on board</td>
+        </tr>
+        <tr>
+          <td><span class="term">Actions</span></td>
+          <td>Go left / Go right</td>
+          <td>How to move the control sticks</td>
+          <td>All legal moves</td>
+        </tr>
+        <tr>
+          <td><span class="term">Rewards</span></td>
+          <td>+100 (S1), +40 (S6), 0 (others)</td>
+          <td>+1 flying well; −1,000 on crash</td>
+          <td>+1 win, −1 loss, 0 tie</td>
+        </tr>
+        <tr>
+          <td><span class="term">γ</span></td>
+          <td>0.5 (illustrative)</td>
+          <td>≈ 0.99</td>
+          <td>0.99 – 0.999</td>
+        </tr>
+        <tr>
+          <td><span class="term">Policy π(s)</span></td>
+          <td>Which direction to move</td>
+          <td>Control stick movements given position</td>
+          <td>Best move given board state</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem;">
+      Chess uses γ very close to 1 (e.g. 0.999) because the only meaningful reward comes at the very end of the game — heavy discounting would make winning feel too distant to optimise for.
+    </div>
+  </div>
+
+  <!-- 22. Markov Decision Process -->
+  <div class="card">
+    <h2><span class="icon">📐</span> Markov Decision Process (MDP)</h2>
+    <ul>
+      <li>The formal name for the RL framework we've been building is a <span class="term">Markov Decision Process (MDP)</span>.</li>
+      <li>It's not a new idea — it's just the official name for the (s, a, R, γ, π) formalism.</li>
+    </ul>
+
+    <!-- Markov property highlight -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin:0.9rem 0;">
+      <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#64748b; margin-bottom:0.5rem;">The Markov Property</div>
+      <div style="color:#c7d2fe; font-size:0.95rem; line-height:1.7;">
+        The future depends <strong>only on the current state</strong>, not on the history of how you got there.
+      </div>
+      <div style="color:#94a3b8; font-size:0.85rem; margin-top:0.5rem;">
+        In other words: <em>"It doesn't matter how you got here — only where you are now determines what happens next."</em>
+      </div>
+    </div>
+
+    <ul>
+      <li>This property simplifies decision-making enormously: the agent only needs to observe the current state <em>s</em> — no memory of past states is required.</li>
+      <li>For the rover: being in State 4 is the same regardless of whether you came from State 3 or State 5.</li>
+    </ul>
+  </div>
+
+  <!-- 23. The Agent–Environment Loop -->
+  <div class="card">
+    <h2><span class="icon">🔃</span> The Agent–Environment Interaction Loop</h2>
+    <ul>
+      <li>The MDP can be visualised as a continuous loop between the <strong>agent</strong> and the <strong>environment</strong>:</li>
+    </ul>
+
+    <!-- Loop diagram -->
+    <div style="display:flex; flex-direction:column; gap:0; margin:1rem 0; border:1px solid #2d3148; border-radius:10px; overflow:hidden;">
+      <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; background:#151823;">
+        <div style="padding:1rem 1.2rem; text-align:center;">
+          <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#6366f1; margin-bottom:0.3rem;">Agent</div>
+          <div style="color:#e2e8f0; font-size:0.88rem;">Chooses action <em>a</em><br>using policy <strong>π(s)</strong></div>
+        </div>
+        <div style="font-size:1.5rem; color:#4b5563; padding:0 0.5rem;">⇄</div>
+        <div style="padding:1rem 1.2rem; text-align:center;">
+          <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#6366f1; margin-bottom:0.3rem;">Environment</div>
+          <div style="color:#e2e8f0; font-size:0.88rem;">Returns new state <em>s'</em><br>and reward <em>R(s)</em></div>
+        </div>
+      </div>
+      <div style="background:#1a1d2e; padding:0.7rem 1.2rem; display:flex; justify-content:space-around; font-size:0.82rem; color:#94a3b8; border-top:1px solid #2d3148;">
+        <span>Agent observes: <strong style="color:#a5b4fc;">s, R(s)</strong></span>
+        <span>Agent outputs: <strong style="color:#a5b4fc;">a = π(s)</strong></span>
+        <span>World transitions to: <strong style="color:#a5b4fc;">s'</strong></span>
+      </div>
+    </div>
+
+    <ul>
+      <li>This loop repeats at every time step until a terminal state is reached.</li>
+      <li>The agent's only lever is its choice of <em>action</em> — the environment's dynamics (how states transition) are fixed.</li>
+    </ul>
+  </div>
+
+  <!-- 24. What's Next -->
+  <div class="card">
+    <h2><span class="icon">⏭️</span> What's Next — The State-Action Value Function</h2>
+    <ul>
+      <li>We now have a complete description of the RL problem via the MDP formalism.</li>
+      <li>The next challenge: <em>how does the algorithm actually find a good policy?</em></li>
+      <li>The key tool is the <span class="term">state-action value function</span> (also called the <strong>Q-function</strong>): for every (state, action) pair, it estimates the return you'd get by taking that action and then following the best possible policy afterwards.</li>
+      <li>Learning to compute Q will be the foundation for building a practical RL algorithm.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> Defining and computing the <strong>Q-function Q(s, a)</strong> — the central quantity that RL algorithms use to pick optimal actions.
+    </div>
+  </div>
+
+  <footer>
+    Machine Learning Specialization · Reinforcement Learning Week · Notes compiled March 2026
+  </footer>
+
+</div>
+</body>
+</html>
