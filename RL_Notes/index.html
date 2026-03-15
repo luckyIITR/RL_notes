@@ -1252,6 +1252,726 @@
     </div>
   </div>
 
+  <!-- ── Lecture 10 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 10 — Continuous State Spaces</span>
+    <hr />
+  </div>
+
+  <!-- 43. Discrete vs Continuous -->
+  <div class="card">
+    <h2><span class="icon">📏</span> Discrete vs Continuous State Spaces</h2>
+    <ul>
+      <li>The simplified Mars Rover used a <span class="term">discrete state space</span>: the rover could only be in one of exactly 6 positions (states 1–6).</li>
+      <li>Most real robots can occupy a <em>continuous</em> range of positions — any real-valued number within a valid range.</li>
+      <li>A <span class="term">continuous state space</span> represents the state as a <strong>vector of real-valued numbers</strong> rather than a single index.</li>
+    </ul>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-top:0.8rem;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6366f1; margin-bottom:0.4rem;">Discrete (Mars Rover)</div>
+        <div style="color:#cbd5e1; font-size:0.88rem;">State ∈ {1, 2, 3, 4, 5, 6}<br>6 possible values, exactly.</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6366f1; margin-bottom:0.4rem;">Continuous (Real Rover)</div>
+        <div style="color:#cbd5e1; font-size:0.88rem;">State ∈ [0, 6] km<br>Infinitely many values (e.g. 2.7, 4.8…).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 44. State vectors for real systems -->
+  <div class="card">
+    <h2><span class="icon">🚗🚁</span> State Vectors in Real Applications</h2>
+    <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">Each real system requires a vector of numbers to fully describe its state:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>System</th>
+          <th>State components</th>
+          <th># values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🔴 Mars Rover (simplified)</td>
+          <td>Position along track (1–6)</td>
+          <td>1 (discrete)</td>
+        </tr>
+        <tr>
+          <td>🚗 Car / Truck</td>
+          <td>x, y, θ (orientation), ẋ, ẏ, θ̇ (angular velocity)</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td>🚁 Helicopter</td>
+          <td>x, y, z, φ (roll), θ (pitch), ω (yaw), ẋ, ẏ, ż, φ̇, θ̇, ω̇</td>
+          <td>12</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Car breakdown -->
+    <p style="color:#94a3b8; font-size:0.85rem; margin: 1rem 0 0.5rem;">Car state — what each component means:</p>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.6rem;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">x, y</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">Position on ground plane</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">θ</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">Heading / orientation (0°–360°)</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">ẋ, ẏ</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">Velocity in x and y directions</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem; grid-column:2;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">θ̇</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">Angular velocity (turning rate)</div>
+      </div>
+    </div>
+
+    <!-- Helicopter breakdown -->
+    <p style="color:#94a3b8; font-size:0.85rem; margin: 1rem 0 0.5rem;">Helicopter state — 12 numbers:</p>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.6rem;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">x, y, z</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">3D position (N/S, E/W, altitude)</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">φ, θ, ω</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">Roll, Pitch, Yaw (orientation)</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">ẋ, ẏ, ż</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">Linear velocities (3 axes)</div>
+      </div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:7px; padding:0.65rem 0.8rem; font-size:0.82rem; grid-column:2;">
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc; font-weight:700;">φ̇, θ̇, ω̇</div>
+        <div style="color:#94a3b8; margin-top:0.2rem;">Angular velocities (roll, pitch, yaw rates)</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Policy input:</strong> For the helicopter, the policy π takes all 12 numbers as input and outputs the appropriate control-stick movement. This is why neural networks are well-suited as policies — they handle high-dimensional input vectors naturally.
+    </div>
+  </div>
+
+  <!-- 45. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — Continuous State Spaces</h2>
+    <ul>
+      <li>A <span class="term">continuous state MDP</span> (continuous MDP) replaces the discrete state index with a <strong>vector of real numbers</strong>.</li>
+      <li>The RL formalism — states, actions, rewards, discount factor, Bellman equation — stays exactly the same.</li>
+      <li>The key difference is that the policy π(s) now takes a real-valued vector as input instead of a single integer.</li>
+      <li>The practice lab uses a <strong>lunar lander</strong> simulation — another continuous state application — where you implement a full RL algorithm.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming up:</strong> The lunar lander application — a continuous state RL environment — and the full deep RL algorithm (Deep Q-Network) for solving it.
+    </div>
+  </div>
+
+  <!-- ── Lecture 11 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 11 — Lunar Lander Application</span>
+    <hr />
+  </div>
+
+  <!-- 46. The Task -->
+  <div class="card">
+    <h2><span class="icon">🌕</span> The Lunar Lander Task</h2>
+    <ul>
+      <li>A classic simulated RL environment widely used in research.</li>
+      <li>Goal: fire thrusters at the right times to land a vehicle safely between two yellow flags on the lunar surface.</li>
+      <li>Failure mode: if the policy performs poorly, the lander crashes into the surface.</li>
+      <li>γ = <strong>0.985</strong> — close to 1, reflecting that rewards throughout the whole landing sequence matter, not just the final outcome.</li>
+    </ul>
+  </div>
+
+  <!-- 47. Actions -->
+  <div class="card">
+    <h2><span class="icon">🕹️</span> Action Space (4 discrete actions)</h2>
+    <div class="app-grid">
+      <div class="app-item"><span class="emoji">⬛</span><div><strong>Nothing</strong><div style="font-size:0.78rem;color:#64748b;">Inertia &amp; gravity take over</div></div></div>
+      <div class="app-item"><span class="emoji">◀️</span><div><strong>Left thruster</strong><div style="font-size:0.78rem;color:#64748b;">Pushes lander rightward</div></div></div>
+      <div class="app-item"><span class="emoji">🔥</span><div><strong>Main engine</strong><div style="font-size:0.78rem;color:#64748b;">Thrusts downward, slows descent</div></div></div>
+      <div class="app-item"><span class="emoji">▶️</span><div><strong>Right thruster</strong><div style="font-size:0.78rem;color:#64748b;">Pushes lander leftward</div></div></div>
+    </div>
+  </div>
+
+  <!-- 48. State Space -->
+  <div class="card">
+    <h2><span class="icon">📡</span> State Space (8 variables)</h2>
+    <table>
+      <thead>
+        <tr><th>Variable</th><th>Symbol</th><th>Type</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Horizontal position</td><td><span class="term">x</span></td><td>Continuous</td><td>Left/right distance from pad centre</td></tr>
+        <tr><td>Vertical position</td><td><span class="term">y</span></td><td>Continuous</td><td>Height above surface</td></tr>
+        <tr><td>Horizontal velocity</td><td><span class="term">ẋ</span></td><td>Continuous</td><td>Speed in horizontal direction</td></tr>
+        <tr><td>Vertical velocity</td><td><span class="term">ẏ</span></td><td>Continuous</td><td>Speed in vertical direction</td></tr>
+        <tr><td>Angle</td><td><span class="term">θ</span></td><td>Continuous</td><td>Tilt left or right</td></tr>
+        <tr><td>Angular velocity</td><td><span class="term">θ̇</span></td><td>Continuous</td><td>Rate of tilt change</td></tr>
+        <tr><td>Left leg grounded</td><td><span class="term">l</span></td><td>Binary (0/1)</td><td>Is left leg touching the ground?</td></tr>
+        <tr><td>Right leg grounded</td><td><span class="term">r</span></td><td>Binary (0/1)</td><td>Is right leg touching the ground?</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:0.9rem;">
+      The state vector s = [x, y, ẋ, ẏ, θ, θ̇, l, r] — 6 continuous values + 2 binary values. The binary leg variables matter because a small positional difference determines whether the lander has touched down.
+    </div>
+  </div>
+
+  <!-- 49. Reward Function -->
+  <div class="card">
+    <h2><span class="icon">🏆</span> Reward Function (Moderately Complex)</h2>
+    <table>
+      <thead>
+        <tr><th>Event</th><th>Reward</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Reaching the landing pad</td><td style="color:#4ade80; font-weight:700;">+100 to +140</td></tr>
+        <tr><td>Moving closer to the pad</td><td style="color:#4ade80; font-weight:700;">+ (positive)</td></tr>
+        <tr><td>Drifting away from the pad</td><td style="color:#f87171; font-weight:700;">− (negative)</td></tr>
+        <tr><td>Crash landing</td><td style="color:#f87171; font-weight:700;">−100</td></tr>
+        <tr><td>Soft landing (no crash)</td><td style="color:#4ade80; font-weight:700;">+100</td></tr>
+        <tr><td>Each leg grounded</td><td style="color:#4ade80; font-weight:700;">+10 per leg</td></tr>
+        <tr><td>Firing main engine</td><td style="color:#f87171; font-weight:700;">−0.3</td></tr>
+        <tr><td>Firing left or right thruster</td><td style="color:#f87171; font-weight:700;">−0.03</td></tr>
+      </tbody>
+    </table>
+    <ul style="margin-top:1rem;">
+      <li>Small fuel penalties (−0.3, −0.03) discourage unnecessary thruster firing.</li>
+      <li>This reward function required deliberate design — each term encodes a specific desired or undesired behaviour.</li>
+      <li>Despite its complexity, specifying this reward function is still far easier than specifying the exact correct action for every possible state.</li>
+    </ul>
+  </div>
+
+  <!-- 50. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — Lunar Lander as an RL Problem</h2>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Lunar Lander</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="term">States</span></td><td>[x, y, ẋ, ẏ, θ, θ̇, l, r] — 8-dimensional vector</td></tr>
+        <tr><td><span class="term">Actions</span></td><td>Nothing, Left, Main, Right</td></tr>
+        <tr><td><span class="term">Rewards</span></td><td>Multi-component function (landing, proximity, crash, fuel)</td></tr>
+        <tr><td><span class="term">γ</span></td><td>0.985 (near 1 — patient, full-episode horizon)</td></tr>
+        <tr><td><span class="term">Policy π(s)</span></td><td>Maps 8-dim state vector → one of 4 actions</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Coming up:</strong> Deep Reinforcement Learning — using a <strong>neural network</strong> to represent the Q-function and learn the optimal policy for the lunar lander and similar continuous-state problems.
+    </div>
+  </div>
+
+  <!-- ── Lecture 12 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 12 — Deep Q-Network (DQN)</span>
+    <hr />
+  </div>
+
+  <!-- 51. Core Idea -->
+  <div class="card">
+    <h2><span class="icon">🧠</span> Core Idea — Neural Network as Q-Function</h2>
+    <ul>
+      <li>For continuous state spaces, we can't tabulate Q(s, a) — there are infinitely many states.</li>
+      <li>Solution: train a <strong>neural network</strong> to <em>approximate</em> Q(s, a) for any input (s, a) pair.</li>
+      <li>Once we have a good approximation of Q, picking actions is easy: compute Q(s, a) for all actions and pick the one with the highest value.</li>
+      <li>This algorithm is called the <span class="term">DQN (Deep Q-Network)</span> — deep learning + Q-function.</li>
+    </ul>
+  </div>
+
+  <!-- 52. Neural Network Architecture -->
+  <div class="card">
+    <h2><span class="icon">🏗️</span> Neural Network Architecture</h2>
+    <ul>
+      <li><strong>Input (12 numbers):</strong>
+        <ul>
+          <li>8 numbers — state vector [x, y, ẋ, ẏ, θ, θ̇, l, r]</li>
+          <li>4 numbers — one-hot encoding of the action (nothing, left, main, right)</li>
+        </ul>
+      </li>
+      <li><strong>Hidden layers:</strong> e.g. 64 units → 64 units (ReLU activations)</li>
+      <li><strong>Output:</strong> a single number — the estimated Q(s, a)</li>
+    </ul>
+
+    <!-- Architecture diagram -->
+    <div style="display:flex; align-items:center; gap:0.6rem; margin:1rem 0; flex-wrap:wrap;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.7rem 1rem; font-size:0.82rem; text-align:center;">
+        <div style="color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">Input x</div>
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc;">s (8) + a (4)<br>= 12 features</div>
+      </div>
+      <div style="color:#4b5563; font-size:1.2rem;">→</div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.7rem 1rem; font-size:0.82rem; text-align:center;">
+        <div style="color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">Hidden 1</div>
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc;">64 units</div>
+      </div>
+      <div style="color:#4b5563; font-size:1.2rem;">→</div>
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.7rem 1rem; font-size:0.82rem; text-align:center;">
+        <div style="color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">Hidden 2</div>
+        <div style="font-family:'Courier New',monospace; color:#a5b4fc;">64 units</div>
+      </div>
+      <div style="color:#4b5563; font-size:1.2rem;">→</div>
+      <div style="background:#151823; border:1px solid #4ade80; border-radius:8px; padding:0.7rem 1rem; font-size:0.82rem; text-align:center;">
+        <div style="color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.3rem;">Output y</div>
+        <div style="font-family:'Courier New',monospace; color:#4ade80;">Q(s, a)</div>
+      </div>
+    </div>
+
+    <ul>
+      <li>At inference time: run the network 4 times (once per action) and pick argmax.</li>
+      <li>Target value during training: <strong>y = R(s) + γ · max<sub>a'</sub> Q(s', a')</strong> — the right-hand side of the Bellman equation.</li>
+    </ul>
+  </div>
+
+  <!-- 53. Generating Training Data -->
+  <div class="card">
+    <h2><span class="icon">🗃️</span> Generating Training Data — The Replay Buffer</h2>
+    <ul>
+      <li>Let the lunar lander take actions (initially random) and record every experience as a tuple: <span class="term">(s, a, R(s), s')</span></li>
+      <li>Store the <strong>10,000 most recent tuples</strong> — this is called the <span class="term">replay buffer</span>.</li>
+      <li>Older tuples are discarded as new ones arrive, keeping memory bounded.</li>
+    </ul>
+
+    <!-- Tuple → training example -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin:0.9rem 0;">
+      <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:#64748b; margin-bottom:0.7rem;">Converting a tuple into a training example</div>
+      <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:0.6rem; font-size:0.88rem;">
+        <div style="background:#1e2130; border:1px solid #2d3148; border-radius:6px; padding:0.6rem 0.8rem;">
+          <div style="color:#6366f1; font-size:0.68rem; font-weight:700; text-transform:uppercase; margin-bottom:0.3rem;">Input X</div>
+          <div style="font-family:'Courier New',monospace; color:#c7d2fe;">s, a<br><span style="color:#64748b; font-size:0.78rem;">(12 numbers)</span></div>
+        </div>
+        <div style="color:#4b5563; font-size:1rem; text-align:center;">←tuple→</div>
+        <div style="background:#1e2130; border:1px solid #2d3148; border-radius:6px; padding:0.6rem 0.8rem;">
+          <div style="color:#6366f1; font-size:0.68rem; font-weight:700; text-transform:uppercase; margin-bottom:0.3rem;">Target Y</div>
+          <div style="font-family:'Courier New',monospace; color:#c7d2fe; font-size:0.82rem;">R(s) + γ·max<sub>a'</sub> Q(s',a')<br><span style="color:#64748b; font-size:0.78rem;">(single number)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <ul>
+      <li>10,000 tuples → 10,000 (X, Y) training pairs.</li>
+      <li>Q(s', a') in the target is computed using the <em>current</em> neural network — even a random initial guess works, because the estimate improves iteratively.</li>
+    </ul>
+  </div>
+
+  <!-- 54. Full DQN Algorithm -->
+  <div class="card">
+    <h2><span class="icon">⚙️</span> Full DQN Algorithm</h2>
+    <ol style="list-style:decimal; padding-left:1.6rem;">
+      <li style="padding-left:0; margin-bottom:0.6rem; color:#cbd5e1;"><strong style="color:#a5b4fc;">Initialise</strong> the neural network with random weights — this is our first (random) guess of Q.</li>
+      <li style="padding-left:0; margin-bottom:0.6rem; color:#cbd5e1;"><strong style="color:#a5b4fc;">Take actions</strong> in the environment (randomly at first). Store each (s, a, R(s), s') tuple in the replay buffer (keep last 10,000).</li>
+      <li style="padding-left:0; margin-bottom:0.6rem; color:#cbd5e1;"><strong style="color:#a5b4fc;">Build training set</strong> from the 10,000 buffered tuples:
+        <ul style="margin-top:0.3rem;">
+          <li>X = [s, a] (12-dim vector)</li>
+          <li>Y = R(s) + γ · max<sub>a'</sub> Q(s', a') (using current network for Q)</li>
+        </ul>
+      </li>
+      <li style="padding-left:0; margin-bottom:0.6rem; color:#cbd5e1;"><strong style="color:#a5b4fc;">Train</strong> a new neural network Q<sub>new</sub> on this (X, Y) dataset using mean squared error loss — exactly like supervised learning.</li>
+      <li style="padding-left:0; margin-bottom:0.6rem; color:#cbd5e1;"><strong style="color:#a5b4fc;">Update</strong> Q ← Q<sub>new</sub> and repeat from step 2.</li>
+    </ol>
+    <div class="callout" style="margin-top:0.9rem;">
+      <strong>Why it converges:</strong> Each iteration produces a slightly better Q estimate. As Q improves, the target Y becomes more accurate, which trains an even better Q. This virtuous cycle — analogous to gradient descent improving weights — eventually yields a good approximation of the true Q-function.
+    </div>
+  </div>
+
+  <!-- 55. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — DQN</h2>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="term">Neural network</span></td><td>Approximates Q(s, a) for continuous state spaces</td></tr>
+        <tr><td><span class="term">Input</span></td><td>12-dim vector: 8 state values + 4-dim one-hot action</td></tr>
+        <tr><td><span class="term">Target y</span></td><td>R(s) + γ · max<sub>a'</sub> Q(s', a') — from Bellman equation</td></tr>
+        <tr><td><span class="term">Replay buffer</span></td><td>Stores 10,000 most recent (s, a, R, s') tuples</td></tr>
+        <tr><td><span class="term">Training</span></td><td>Supervised learning (MSE loss) on buffered (X, Y) pairs</td></tr>
+        <tr><td><span class="term">Action selection</span></td><td>Compute Q for all 4 actions; pick argmax</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Coming up:</strong> Refinements to the DQN algorithm that make it converge faster and perform significantly better in practice.
+    </div>
+  </div>
+
+  <!-- ── Lecture 13 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 13 — DQN Refinement: Multi-Output Architecture</span>
+    <hr />
+  </div>
+
+  <!-- 56. The Problem with the Original Architecture -->
+  <div class="card">
+    <h2><span class="icon">⚠️</span> Inefficiency of the Original Architecture</h2>
+    <ul>
+      <li>Original design: input = (s, a) as 12 numbers → output = single Q(s, a) value.</li>
+      <li>To pick the best action from state s, you must run the network <strong>4 separate times</strong> — once per action — then compare the four Q-values.</li>
+      <li>Similarly, computing max<sub>a'</sub> Q(s', a') for the Bellman target requires 4 forward passes per training example.</li>
+      <li>This is wasteful: each forward pass processes almost identical input (same state, different action).</li>
+    </ul>
+  </div>
+
+  <!-- 57. Multi-Output Architecture -->
+  <div class="card">
+    <h2><span class="icon">⚡</span> Improved Architecture — All Q-Values in One Pass</h2>
+    <ul>
+      <li>New design: input = state only (8 numbers) → output = <strong>all 4 Q-values simultaneously</strong>.</li>
+      <li>One forward pass gives Q(s, nothing), Q(s, left), Q(s, main), Q(s, right) at once.</li>
+      <li>Pick the action with the highest output — no repeated inference needed.</li>
+    </ul>
+
+    <!-- Side-by-side architecture comparison -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; margin:1rem 0;">
+
+      <!-- Old -->
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#f87171; margin-bottom:0.7rem;">Original (inefficient)</div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0.35rem; font-size:0.8rem; font-family:'Courier New',monospace;">
+          <div style="background:#1e2130; border:1px solid #2d3148; border-radius:5px; padding:0.3rem 0.7rem; color:#a5b4fc;">s + a  (12 nums)</div>
+          <div style="color:#4b5563;">↓</div>
+          <div style="background:#1e2130; border:1px solid #2d3148; border-radius:5px; padding:0.3rem 0.7rem; color:#a5b4fc;">64 → 64</div>
+          <div style="color:#4b5563;">↓</div>
+          <div style="background:#1e2130; border:1px solid #2d3148; border-radius:5px; padding:0.3rem 0.7rem; color:#a5b4fc;">1 output: Q(s,a)</div>
+          <div style="color:#f87171; font-size:0.72rem; margin-top:0.3rem; font-family:sans-serif;">× 4 runs to compare actions</div>
+        </div>
+      </div>
+
+      <!-- New -->
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#4ade80; margin-bottom:0.7rem;">Improved (efficient)</div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0.35rem; font-size:0.8rem; font-family:'Courier New',monospace;">
+          <div style="background:#1e2130; border:1px solid #2d3148; border-radius:5px; padding:0.3rem 0.7rem; color:#a5b4fc;">s only  (8 nums)</div>
+          <div style="color:#4b5563;">↓</div>
+          <div style="background:#1e2130; border:1px solid #2d3148; border-radius:5px; padding:0.3rem 0.7rem; color:#a5b4fc;">64 → 64</div>
+          <div style="color:#4b5563;">↓</div>
+          <div style="background:#1e2130; border:1px solid #4ade80; border-radius:5px; padding:0.3rem 0.7rem; color:#4ade80;">4 outputs: Q(s,·)</div>
+          <div style="color:#4ade80; font-size:0.72rem; margin-top:0.3rem; font-family:sans-serif;">1 run → all 4 values</div>
+        </div>
+      </div>
+    </div>
+
+    <ul>
+      <li>The 4 outputs are: <span class="term">Q(s, nothing)</span>, <span class="term">Q(s, left)</span>, <span class="term">Q(s, main)</span>, <span class="term">Q(s, right)</span>.</li>
+      <li>Computing the Bellman target max<sub>a'</sub> Q(s', a') is also faster — one pass over s' gives all four values; just take the max.</li>
+      <li>This architecture is used in the practice lab and in most real DQN implementations.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Key benefit:</strong> 4× fewer forward passes during both action selection and Bellman target computation — a significant speedup with no loss in accuracy.
+    </div>
+  </div>
+
+  <!-- 58. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — Architecture Refinement</h2>
+    <table>
+      <thead>
+        <tr><th></th><th>Original</th><th>Improved</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Input</td><td>s + a (12 numbers)</td><td>s only (8 numbers)</td></tr>
+        <tr><td>Outputs</td><td>1 — Q(s, a)</td><td>4 — Q(s, a) for all actions</td></tr>
+        <tr><td>Passes to pick action</td><td>4</td><td style="color:#4ade80; font-weight:700;">1</td></tr>
+        <tr><td>Passes for Bellman max</td><td>4</td><td style="color:#4ade80; font-weight:700;">1</td></tr>
+        <tr><td>Used in practice lab?</td><td>No</td><td style="color:#4ade80; font-weight:700;">Yes</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Coming up:</strong> The <strong>ε-greedy (epsilon-greedy) policy</strong> — how to choose actions intelligently while the Q-function is still being learned.
+    </div>
+  </div>
+
+  <!-- ── Lecture 14 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 14 — ε-Greedy Policy</span>
+    <hr />
+  </div>
+
+  <!-- 59. The Problem: Acting While Learning -->
+  <div class="card">
+    <h2><span class="icon">🤔</span> The Problem: How to Act While Still Learning?</h2>
+    <ul>
+      <li>During training, the DQN algorithm must take actions in the environment to collect experience — but the Q-function estimate is still inaccurate.</li>
+      <li><strong>Option 1 — Always greedy:</strong> always pick the action that maximises the current Q(s, a). Simple, but risky.</li>
+      <li><strong>Problem with Option 1:</strong> if random initialisation causes Q(s, main) to always be very low, the network will <em>never</em> fire the main thruster — so it can never learn that firing it is sometimes a good idea. The algorithm gets stuck in its own preconceptions.</li>
+    </ul>
+  </div>
+
+  <!-- 60. The ε-Greedy Policy -->
+  <div class="card">
+    <h2><span class="icon">🎲</span> The ε-Greedy Policy</h2>
+    <ul>
+      <li><strong>Option 2 (standard):</strong> most of the time be greedy, but occasionally act randomly.</li>
+    </ul>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; margin:0.9rem 0;">
+      <div style="background:#151823; border:1px solid #4ade80; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#4ade80; margin-bottom:0.35rem;">With probability 1 − ε (e.g. 95%)</div>
+        <div style="color:#cbd5e1; font-size:0.9rem;"><strong>Exploitation</strong> — pick the action that maximises Q(s, a). Also called the <span class="term">greedy action</span>.</div>
+      </div>
+      <div style="background:#151823; border:1px solid #6366f1; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6366f1; margin-bottom:0.35rem;">With probability ε (e.g. 5%)</div>
+        <div style="color:#cbd5e1; font-size:0.9rem;"><strong>Exploration</strong> — pick a random action. Lets the agent discover actions it might otherwise never try.</div>
+      </div>
+    </div>
+
+    <ul>
+      <li>ε (epsilon) is the <em>exploration probability</em>. Despite the name "epsilon-greedy", the policy is actually greedy <strong>1 − ε</strong> of the time (e.g. 95%), not ε of the time — a naming quirk to be aware of.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Exploration vs Exploitation trade-off:</strong> How often should the agent try new things (explore) vs. use what it already knows (exploit)? ε-greedy is the standard solution: mostly exploit, but explore just enough to avoid getting stuck.
+    </div>
+  </div>
+
+  <!-- 61. Decaying Epsilon -->
+  <div class="card">
+    <h2><span class="icon">📉</span> Decaying ε Over Time</h2>
+    <ul>
+      <li>A common trick: start with a <strong>high ε</strong> (e.g. 1.0 — fully random) and gradually decrease it to a small value (e.g. 0.01) as training progresses.</li>
+      <li>Early in training: explore widely, since the Q-function estimate is unreliable anyway.</li>
+      <li>Later in training: exploit the now-accurate Q-function, acting randomly only 1% of the time.</li>
+    </ul>
+
+    <!-- Decay visual -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.2rem; margin:0.8rem 0; font-size:0.88rem;">
+      <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; margin-bottom:0.6rem;">ε schedule — Lunar Lander example</div>
+      <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+        <div style="background:#1e2130; border:1px solid #6366f1; border-radius:5px; padding:0.35rem 0.7rem; font-family:'Courier New',monospace; color:#a5b4fc; font-size:0.82rem;">ε = 1.0<br><span style="color:#64748b; font-size:0.72rem;">start</span></div>
+        <div style="color:#4b5563; font-size:1rem;">→ … →</div>
+        <div style="background:#1e2130; border:1px solid #6366f1; border-radius:5px; padding:0.35rem 0.7rem; font-family:'Courier New',monospace; color:#a5b4fc; font-size:0.82rem;">ε = 0.5<br><span style="color:#64748b; font-size:0.72rem;">mid</span></div>
+        <div style="color:#4b5563; font-size:1rem;">→ … →</div>
+        <div style="background:#1e2130; border:1px solid #4ade80; border-radius:5px; padding:0.35rem 0.7rem; font-family:'Courier New',monospace; color:#4ade80; font-size:0.82rem;">ε = 0.01<br><span style="color:#4ade80; font-size:0.72rem;">converged</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 62. RL Hyperparameter Sensitivity -->
+  <div class="card">
+    <h2><span class="icon">⚠️</span> RL Is More Sensitive to Hyperparameters than Supervised Learning</h2>
+    <ul>
+      <li>In supervised learning, a slightly wrong learning rate might make training 3× slower — annoying but manageable.</li>
+      <li>In reinforcement learning, a poorly tuned ε (or other parameters) can make training <strong>10× or 100× slower</strong>, or prevent convergence entirely.</li>
+      <li>This is partly because RL algorithms are less mature and more interdependent than supervised learning algorithms.</li>
+      <li>Practical advice: use well-tested default hyperparameters (provided in the practice lab) before experimenting.</li>
+    </ul>
+  </div>
+
+  <!-- 63. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — ε-Greedy Policy</h2>
+    <table>
+      <thead>
+        <tr><th>Term</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="term">Exploitation</span></td><td>Pick argmax<sub>a</sub> Q(s,a) — use current best knowledge</td></tr>
+        <tr><td><span class="term">Exploration</span></td><td>Pick a random action — discover underexplored options</td></tr>
+        <tr><td><span class="term">ε (epsilon)</span></td><td>Probability of exploring; typically small (e.g. 0.05–0.1)</td></tr>
+        <tr><td><span class="term">Decaying ε</span></td><td>Start high (1.0), decay to low (0.01) as training matures</td></tr>
+        <tr><td><span class="term">ε-greedy policy</span></td><td>Standard action-selection strategy: (1−ε) greedy + ε random</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Coming up (optional):</strong> Two more DQN refinements — <strong>mini-batching</strong> (training on random subsets of the replay buffer) and <strong>soft updates</strong> (smoothly updating the target network) — that make the algorithm converge significantly faster.
+    </div>
+  </div>
+
+  <!-- ── Lecture 15 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 15 (Optional) — Mini-Batching &amp; Soft Updates</span>
+    <hr />
+  </div>
+
+  <!-- 64. Mini-Batch Gradient Descent -->
+  <div class="card">
+    <h2><span class="icon">⚡</span> Refinement 1 — Mini-Batch Gradient Descent</h2>
+    <ul>
+      <li><strong>Problem:</strong> with a very large dataset (e.g. m = 100 million examples), every gradient descent step requires summing over all 100 million examples — extremely slow.</li>
+      <li><strong>Solution:</strong> on each step, use only a small random subset of m' examples (e.g. m' = 1,000) instead of the whole dataset.</li>
+      <li>Each step is much faster; on average the updates still move toward the global minimum.</li>
+      <li>Applies to <em>any</em> gradient-based algorithm: linear regression, logistic regression, neural networks, and RL.</li>
+    </ul>
+
+    <!-- Batch vs Mini-batch comparison -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; margin:0.9rem 0;">
+      <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; margin-bottom:0.4rem;">Batch Gradient Descent</div>
+        <ul>
+          <li>Uses all m examples per step.</li>
+          <li>Each step moves <strong>reliably</strong> toward the minimum.</li>
+          <li>Very slow when m is large.</li>
+        </ul>
+      </div>
+      <div style="background:#151823; border:1px solid #6366f1; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6366f1; margin-bottom:0.4rem;">Mini-Batch Gradient Descent</div>
+        <ul>
+          <li>Uses m' ≪ m examples per step.</li>
+          <li>Path to minimum is <strong>noisy</strong> but on average correct.</li>
+          <li>Much faster per step — preferred in practice.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>In RL (DQN):</strong> even if the replay buffer holds 10,000 tuples, use only a random mini-batch of, say, 1,000 to train the network on each iteration. Noisier, but significantly faster overall.
+    </div>
+  </div>
+
+  <!-- 65. Soft Updates -->
+  <div class="card">
+    <h2><span class="icon">🌊</span> Refinement 2 — Soft Updates</h2>
+    <ul>
+      <li><strong>Problem with hard updates:</strong> the original algorithm sets Q ← Q<sub>new</sub> after each training round. If Q<sub>new</sub> happens to be a worse network (due to noise), the Q-function degrades abruptly.</li>
+      <li><strong>Solution:</strong> instead of replacing W and B entirely, blend the old and new weights gradually.</li>
+    </ul>
+
+    <!-- Formula -->
+    <div style="background:#151823; border:1px solid #2d3148; border-radius:8px; padding:1rem 1.3rem; margin:0.9rem 0;">
+      <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:#64748b; margin-bottom:0.7rem;">Soft Update Rule</div>
+      <div style="font-family:'Courier New', monospace; color:#c7d2fe; font-size:0.95rem; line-height:2.1;">
+        W ← τ · W<sub>new</sub> + (1 − τ) · W<br>
+        B ← τ · B<sub>new</sub> + (1 − τ) · B
+      </div>
+      <div style="color:#94a3b8; font-size:0.82rem; margin-top:0.5rem;">
+        e.g. τ = 0.01 → accept 1% of the new network, keep 99% of the old one each step.
+      </div>
+    </div>
+
+    <ul>
+      <li>τ (tau) is a hyperparameter controlling how aggressively the network is updated.</li>
+      <li>Hard update = τ = 1.0 (copy W<sub>new</sub> entirely — original algorithm).</li>
+      <li>Soft update = τ ≪ 1 (e.g. 0.01) — gradual, stable blending.</li>
+      <li>Result: the algorithm is <strong>less likely to oscillate or diverge</strong> due to a single bad training step.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Why it works:</strong> No single noisy Q<sub>new</sub> can dramatically harm the current Q estimate. The update accumulates small, consistent improvements rather than lurching between estimates.
+    </div>
+  </div>
+
+  <!-- 66. Summary -->
+  <div class="card">
+    <h2><span class="icon">✅</span> Summary — Two DQN Refinements</h2>
+    <table>
+      <thead>
+        <tr><th>Refinement</th><th>Problem it solves</th><th>How</th><th>Also used in</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">Mini-batching</span></td>
+          <td>Slow training with large replay buffer</td>
+          <td>Train on random subset of m' tuples per step</td>
+          <td>Supervised learning (linear/logistic regression, neural nets)</td>
+        </tr>
+        <tr>
+          <td><span class="term">Soft updates</span></td>
+          <td>Abrupt / unstable Q-function updates</td>
+          <td>W ← τ·W<sub>new</sub> + (1−τ)·W each step</td>
+          <td>RL only (target network stabilisation)</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:1rem;">
+      <strong>Combined effect:</strong> With the multi-output architecture + ε-greedy policy + mini-batching + soft updates, the DQN algorithm trains efficiently and converges reliably enough to successfully land the lunar lander.
+    </div>
+  </div>
+
+  <!-- ── Lecture 16 Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Lecture 16 — State of Reinforcement Learning Today</span>
+    <hr />
+  </div>
+
+  <!-- 67. Honest Assessment -->
+  <div class="card">
+    <h2><span class="icon">🔍</span> An Honest Assessment of RL Today</h2>
+    <ul>
+      <li>RL has genuine research momentum and exciting results — but also a significant amount of <strong>hype</strong> that can distort expectations.</li>
+      <li>Much of the landmark RL research has been demonstrated in <strong>simulated environments</strong> or video games, not on real physical systems.</li>
+      <li>Simulation → real-world transfer is <strong>surprisingly hard</strong>: many teams have found that an algorithm working perfectly in simulation still fails on the real robot due to unmodelled dynamics, sensor noise, and physical variation.</li>
+      <li>If you build an RL application, verify it works in the real target environment, not just in simulation.</li>
+    </ul>
+  </div>
+
+  <!-- 68. RL vs Supervised / Unsupervised Learning in Practice -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> RL in the ML Landscape</h2>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; margin:0.9rem 0;">
+      <div style="background:#151823; border:1px solid #4ade80; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#4ade80; margin-bottom:0.4rem;">Supervised &amp; Unsupervised Learning</div>
+        <ul>
+          <li>Far more real-world applications today.</li>
+          <li>Used heavily in day-to-day applied ML work.</li>
+          <li>More mature, easier to tune, better tooling.</li>
+        </ul>
+      </div>
+      <div style="background:#151823; border:1px solid #6366f1; border-radius:8px; padding:0.9rem 1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6366f1; margin-bottom:0.4rem;">Reinforcement Learning</div>
+        <ul>
+          <li>Fewer deployed applications today.</li>
+          <li>Niche but powerful — especially for robotics and sequential decision-making.</li>
+          <li>Large untapped potential for future applications.</li>
+        </ul>
+      </div>
+    </div>
+
+    <ul>
+      <li>When choosing a technique for a real project, <strong>supervised or unsupervised learning is the more likely fit</strong> — reach for RL when the problem is genuinely sequential decision-making with a reward signal.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Practical guidance:</strong> RL is a powerful framework to have in your toolkit, but don't default to it. Most applied ML problems are better served by supervised or unsupervised approaches.
+    </div>
+  </div>
+
+  <!-- 69. The Future of RL -->
+  <div class="card">
+    <h2><span class="icon">🚀</span> The Future of RL</h2>
+    <ul>
+      <li>Active, fast-moving research area with new ideas published constantly.</li>
+      <li>Potential for large impact in areas like robotics, scientific discovery, personalised decision systems, and long-horizon planning.</li>
+      <li>Remains one of the <strong>major pillars of machine learning</strong> alongside supervised and unsupervised learning.</li>
+      <li>Understanding RL — even at a foundational level — makes you a more versatile ML practitioner.</li>
+    </ul>
+  </div>
+
+  <!-- 70. Full DQN Algorithm Summary -->
+  <div class="card">
+    <h2><span class="icon">🗂️</span> Complete DQN Algorithm — Everything in One Place</h2>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="term">State vector</span></td><td>8-dim continuous input (e.g. lunar lander: x, y, ẋ, ẏ, θ, θ̇, l, r)</td></tr>
+        <tr><td><span class="term">Multi-output network</span></td><td>Input: s (8 nums) → Hidden: 64→64 → Output: Q(s,·) for all 4 actions</td></tr>
+        <tr><td><span class="term">Replay buffer</span></td><td>Stores last 10,000 (s, a, R(s), s') tuples</td></tr>
+        <tr><td><span class="term">Training target y</span></td><td>R(s) + γ · max<sub>a'</sub> Q(s', a') — Bellman equation</td></tr>
+        <tr><td><span class="term">Mini-batching</span></td><td>Train on random m' = 1,000 subset of buffer each step</td></tr>
+        <tr><td><span class="term">ε-greedy policy</span></td><td>Act greedily (1−ε) of the time; explore randomly ε of the time</td></tr>
+        <tr><td><span class="term">Decaying ε</span></td><td>ε: 1.0 → 0.01 over training</td></tr>
+        <tr><td><span class="term">Soft update</span></td><td>W ← τ·W<sub>new</sub> + (1−τ)·W, τ = 0.01</td></tr>
+        <tr><td><span class="term">Discount factor γ</span></td><td>0.985 for lunar lander</td></tr>
+        <tr><td><span class="term">Loss function</span></td><td>Mean squared error on (X, y) pairs</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <footer>
     Machine Learning Specialization · Reinforcement Learning Week · Notes compiled March 2026
   </footer>
