@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reinforcement Learning — Lecture Notes</title>
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../../styles.css" />
 </head>
 <body>
 <div class="container">
@@ -1970,6 +1970,109 @@
         <tr><td><span class="term">Loss function</span></td><td>Mean squared error on (X, y) pairs</td></tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- ── Interview Divider ── -->
+  <div class="section-divider">
+    <hr />
+    <span>Interview — Prof. Chelsea Finn on RL &amp; Robotics</span>
+    <hr />
+  </div>
+
+  <!-- 71. The State of Robotics -->
+  <div class="card">
+    <h2><span class="icon">🤖</span> What Robots Can (and Cannot) Do Today</h2>
+    <ul>
+      <li>Impressive demo videos (e.g. Boston Dynamics back-flips, parkour) are often <strong>tuned for a specific environment</strong>. Change the setup and the demo typically fails.</li>
+      <li>The core unsolved challenge in robotics is <strong>generalisation</strong> — handling diverse objects, tasks, and environments, not just a single controlled scenario.</li>
+      <li>Robots work reliably today in <strong>controlled environments</strong> like factories where variation is limited.</li>
+      <li><strong>Test to ask when watching a robotics demo:</strong> "What happens if you move a block, change the lighting, or slightly reposition the robot?" If it still works — then be impressed.</li>
+    </ul>
+  </div>
+
+  <!-- 72. Simulation vs Real World -->
+  <div class="card">
+    <h2><span class="icon">🌐</span> Simulation vs the Real World</h2>
+    <ul>
+      <li>Simulation enables large-scale data collection but has a critical flaw: <strong>simulated physics ≠ real physics</strong>.</li>
+      <li>Small inaccuracies (e.g. exact friction between a bottle cap and a bottle) compound and cause policies trained in simulation to fail in the real world — the <span class="term">sim-to-real gap</span>.</li>
+      <li>Simulation engines model time at a fixed frequency (e.g. 100 Hz); reality is continuous. Accurate modelling at fine time resolution becomes computationally prohibitive.</li>
+      <li>Creating diverse simulated content (all the objects in a typical kitchen) requires enormous manual effort — contrary to the ML goal of automating everything.</li>
+      <li>Verdict: simulation is a useful data source, but <strong>not the only one</strong>. Real-world data is also essential.</li>
+    </ul>
+  </div>
+
+  <!-- 73. The Data Problem in Robotics -->
+  <div class="card">
+    <h2><span class="icon">🗄️</span> The Data Problem in Robotics</h2>
+    <ul>
+      <li>Unlike NLP (Wikipedia) or computer vision (ImageNet), there is <strong>no large pre-existing dataset</strong> for robot motor control.</li>
+      <li>Robots must collect their own data — an opportunity (scalable) and a challenge (must be useful and diverse).</li>
+      <li>Approaches to building diverse datasets:
+        <ul>
+          <li>Robots collecting data autonomously in many environments.</li>
+          <li>Human demonstrations (teleoperation / VR controllers).</li>
+          <li>Internet video of humans performing tasks.</li>
+        </ul>
+      </li>
+      <li>Current research collects data per-project in a lab. The field needs to move toward <strong>shared, reusable, large-scale datasets</strong> across institutions and robot platforms — analogous to ImageNet for vision.</li>
+      <li>Estimated data need for generalising to a new kitchen: ~20–100 kitchens for a simple task; <strong>thousands</strong> for a complex task like making cereal.</li>
+    </ul>
+    <div class="callout">
+      <strong>Analogy:</strong> If computer vision researchers had to collect ImageNet from scratch for every project, they wouldn't be making much progress. Robotics needs to make the same shift toward reusable, large shared datasets.
+    </div>
+  </div>
+
+  <!-- 74. RL in Real Robotics -->
+  <div class="card">
+    <h2><span class="icon">🦾</span> Applying RL to Real Robots — Practical Challenges</h2>
+    <ul>
+      <li>RL is appealing for robotics because it allows a robot to <em>learn on its own through trial and error</em> — no need for labelled data.</li>
+      <li><strong>Challenge 1 — Reward function:</strong> unlike video games (score = reward), the real world provides no automatic score. The robot may need to <em>learn its own reward function</em> simultaneously with learning the task.</li>
+      <li><strong>Challenge 2 — Reset problem:</strong> trial-and-error requires resetting to a start state after each attempt. Learning to reset (e.g. stand up after failing a back-flip) can itself be as hard as learning the original task.</li>
+      <li><strong>Inverse reinforcement learning (IRL):</strong> one approach to learning reward functions — given demonstrations of desired behaviour, infer the reward function that underlies them.</li>
+    </ul>
+  </div>
+
+  <!-- 75. End-to-End RL -->
+  <div class="card">
+    <h2><span class="icon">🔗</span> End-to-End Reinforcement Learning</h2>
+    <ul>
+      <li>Early robotics used hand-crafted perception pipelines; Prof. Finn's early PhD work at Berkeley explored <strong>learning a single neural network directly from camera pixels to joint torques</strong>.</li>
+      <li>First results: screwing a cap on a bottle and placing a coat hanger — learned end-to-end with no manual feature engineering.</li>
+      <li>The paper was initially rejected twice (roboticists were sceptical of black-box neural networks), but eventually published and sparked a new paradigm.</li>
+      <li>Today, training neural networks end-to-end as robot policies is a mainstream approach and continues to grow.</li>
+    </ul>
+  </div>
+
+  <!-- 76. Meta-Learning -->
+  <div class="card">
+    <h2><span class="icon">🧠</span> Meta-Learning — Learning How to Learn</h2>
+    <ul>
+      <li>Motivation: a robot entering a new kitchen shouldn't start learning from scratch — it should adapt quickly using prior experience.</li>
+      <li><span class="term">Meta-learning</span> = optimise not just for task performance, but for the <em>ability to learn new tasks quickly</em>.</li>
+      <li>Technically: a <strong>bilevel optimisation</strong> — an outer learning problem that optimises the parameters of an inner learning problem for fast adaptation.</li>
+      <li>Simplest form: find the best learning rate for fast adaptation. More complex forms optimise the entire learning algorithm.</li>
+      <li>Application example: meta-RL applied to education — a system that plays a student's game, finds bugs, and gives feedback on how to improve code.</li>
+    </ul>
+  </div>
+
+  <!-- 77. Advice for Getting Started -->
+  <div class="card">
+    <h2><span class="icon">🎓</span> Advice for Getting Started in RL &amp; Robotics</h2>
+    <ul>
+      <li><strong>Just build something.</strong> Learning by doing — with a concrete goal — is the most effective path.</li>
+      <li>Start with a <strong>simulated robot</strong> (lower barrier, no hardware cost). But also try real hardware early — it teaches you how hard robotics really is, and makes successes far more rewarding.</li>
+      <li>Inexpensive entry points: LEGO robotics, DIY robots with wheels + camera + smartphone, off-the-shelf hobby robots.</li>
+    </ul>
+
+    <p style="color:#94a3b8; font-size:0.88rem; margin: 0.9rem 0 0.5rem;">Recommended resources:</p>
+    <div class="app-grid">
+      <div class="app-item"><span class="emoji">📖</span><div><strong>Sutton &amp; Barto</strong><div style="font-size:0.78rem; color:#64748b;">Classic RL textbook</div></div></div>
+      <div class="app-item"><span class="emoji">🎮</span><div><strong>MuJoCo / physics engines</strong><div style="font-size:0.78rem; color:#64748b;">Free simulator for RL experiments</div></div></div>
+      <div class="app-item"><span class="emoji">🤖</span><div><strong>ROS</strong><div style="font-size:0.78rem; color:#64748b;">Robot Operating System — interface standard</div></div></div>
+      <div class="app-item"><span class="emoji">💻</span><div><strong>Online courses &amp; tutorials</strong><div style="font-size:0.78rem; color:#64748b;">Code-bases, videos, open datasets</div></div></div>
+    </div>
   </div>
 
   <footer>

@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recommender Systems — Lecture Notes</title>
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body>
+<div class="container">
+
+  <header class="notes-header">
+    <a href="../index.html" style="font-size:0.78rem; color:#6366f1; text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem; margin-bottom:1rem;">
+      ← Back to topics
+    </a>
+    <div class="tag">Machine Learning Specialization · Week 2</div>
+    <h1>Recommender Systems</h1>
+    <p class="subtitle">Lecture notes · March 2026</p>
+  </header>
+
+  <!-- 1. Why Recommender Systems Matter -->
+  <div class="card">
+    <h2><span class="icon">💡</span> Why Recommender Systems Matter</h2>
+    <ul>
+      <li>Recommender systems power suggestions on online shopping (Amazon), video streaming (Netflix), food delivery apps, social media feeds, and more.</li>
+      <li>For many companies, a <strong>large fraction of total sales</strong> is driven directly by their recommender system.</li>
+      <li>The commercial and economic value of recommender systems is arguably <em>vastly greater</em> than the academic attention they receive.</li>
+      <li>The same core logic applies across domains: products, movies, restaurants, articles, ads.</li>
+    </ul>
+  </div>
+
+  <!-- 2. Problem Setup — Movie Ratings Example -->
+  <div class="card">
+    <h2><span class="icon">🎬</span> Problem Setup — Movie Ratings Example</h2>
+    <ul>
+      <li>Running example: a movie streaming website where users rate movies <strong>0–5 stars</strong>.</li>
+      <li>Users: Alice, Bob, Carol, Dave (users 1–4). Movies: Love at Last, Romance Forever, Cute Puppies of Love, Nonstop Car Chases, Sword vs. Karate (movies 1–5).</li>
+      <li>Not every user rates every movie — missing ratings are denoted with <strong>?</strong>.</li>
+    </ul>
+    <table>
+      <thead>
+        <tr>
+          <th>Movie</th>
+          <th>Alice (1)</th>
+          <th>Bob (2)</th>
+          <th>Carol (3)</th>
+          <th>Dave (4)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Love at Last</td><td>5</td><td>5</td><td>0</td><td>0</td></tr>
+        <tr><td>Romance Forever</td><td>5</td><td>?</td><td>0</td><td>0</td></tr>
+        <tr><td>Cute Puppies of Love</td><td>?</td><td>4</td><td>0</td><td>?</td></tr>
+        <tr><td>Nonstop Car Chases</td><td>0</td><td>0</td><td>5</td><td>4</td></tr>
+        <tr><td>Sword vs. Karate</td><td>0</td><td>0</td><td>5</td><td>?</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. Notation -->
+  <div class="card">
+    <h2><span class="icon">📖</span> Notation</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Meaning</th>
+          <th>Example value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>n<sub>u</sub></code></td>
+          <td>Number of users</td>
+          <td>4 (Alice, Bob, Carol, Dave)</td>
+        </tr>
+        <tr>
+          <td><code>n<sub>m</sub></code></td>
+          <td>Number of movies / items</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td><code>r(i, j)</code></td>
+          <td>1 if user j has rated movie i, 0 otherwise</td>
+          <td>r(1,1) = 1 (Alice rated movie 1); r(3,1) = 0 (Alice has not rated movie 3)</td>
+        </tr>
+        <tr>
+          <td><code>y(i, j)</code></td>
+          <td>Rating given by user j to movie i (only defined when r(i,j) = 1)</td>
+          <td>y(3,2) = 4 (Bob rated Cute Puppies of Love as 4 stars)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. Goal & Approach -->
+  <div class="card">
+    <h2><span class="icon">🎯</span> Goal &amp; Approach</h2>
+    <ul>
+      <li><strong>Goal:</strong> For every (user, movie) pair where r(i,j) = 0, <em>predict</em> what rating the user would give. Use those predictions to recommend movies the user is likely to rate highly (5 stars).</li>
+      <li><strong>First approach (this week):</strong> Assume we have access to features about the movies — e.g. how much of a romance film it is, how much of an action film it is. Use these features to build the algorithm.</li>
+      <li><strong>Later this week:</strong> Revisit the algorithm for the more realistic case where we do <em>not</em> have pre-built features — and see how it can still work.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key insight:</strong> The same algorithm that works for movies works for any item — products, restaurants, articles, ads — as long as you have users, items, and some ratings or interaction signal.
+    </div>
+  </div>
+
+  <!-- 5. Using Movie Features to Predict Ratings -->
+  <div class="card">
+    <h2><span class="icon">🎞️</span> Using Movie Features to Predict Ratings</h2>
+    <ul>
+      <li>Suppose each movie i has a feature vector X<sup>(i)</sup> describing its content. For example:
+        <ul>
+          <li>x<sub>1</sub> = romance score (0–1)</li>
+          <li>x<sub>2</sub> = action score (0–1)</li>
+        </ul>
+      </li>
+      <li>n = number of features (here n = 2).</li>
+    </ul>
+    <table>
+      <thead>
+        <tr><th>Movie</th><th>x<sub>1</sub> (romance)</th><th>x<sub>2</sub> (action)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Love at Last</td><td>0.9</td><td>0.0</td></tr>
+        <tr><td>Romance Forever</td><td>1.0</td><td>0.01</td></tr>
+        <tr><td>Cute Puppies of Love</td><td>0.99</td><td>0.0</td></tr>
+        <tr><td>Nonstop Car Chases</td><td>0.1</td><td>1.0</td></tr>
+        <tr><td>Sword vs. Karate</td><td>0.0</td><td>0.9</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>For each user j, predict the rating of movie i as:
+        <br><br>
+        <code>ŷ(i,j) = w<sup>(j)</sup> · X<sup>(i)</sup> + b<sup>(j)</sup></code>
+        <br><br>
+        This is essentially <span class="term">linear regression</span> — one separate model per user.
+      </li>
+      <li><strong>Example:</strong> Alice (user 1) with w<sup>(1)</sup> = [5, 0], b<sup>(1)</sup> = 0. Prediction for Cute Puppies of Love (X = [0.99, 0]):
+        <br><br>
+        <code>5 × 0.99 + 0 × 0 + 0 = 4.95</code> ✓ (plausible — Alice loves romance films)
+      </li>
+    </ul>
+  </div>
+
+  <!-- 6. Cost Function for a Single User -->
+  <div class="card">
+    <h2><span class="icon">💰</span> Cost Function — Single User j</h2>
+    <ul>
+      <li>m<sup>(j)</sup> = number of movies rated by user j.</li>
+      <li>Only sum over movies i where r(i,j) = 1 (user j has actually rated movie i).</li>
+      <li>Cost function (with regularisation):
+        <br><br>
+        <code>J(w<sup>(j)</sup>, b<sup>(j)</sup>) = (1/2m<sup>(j)</sup>) Σ<sub>{i:r(i,j)=1}</sub> (w<sup>(j)</sup>·X<sup>(i)</sup> + b<sup>(j)</sup> − y(i,j))² + (λ/2m<sup>(j)</sup>) Σ<sub>k</sub> (w<sub>k</sub><sup>(j)</sup>)²</code>
+        <br><br>
+      </li>
+      <li>Minimising this over w<sup>(j)</sup> and b<sup>(j)</sup> gives good parameters for predicting user j's ratings.</li>
+      <li>In practice, the <code>1/m<sup>(j)</sup></code> normalisation term is often dropped — it is just a constant and does not change the optimal w and b.</li>
+    </ul>
+  </div>
+
+  <!-- 7. Cost Function for All Users -->
+  <div class="card">
+    <h2><span class="icon">👥</span> Cost Function — All Users</h2>
+    <ul>
+      <li>To learn parameters for <em>all</em> n<sub>u</sub> users simultaneously, sum the per-user cost over j = 1 … n<sub>u</sub>:
+        <br><br>
+        <code>J(w<sup>(1)</sup>,b<sup>(1)</sup>,…,w<sup>(n<sub>u</sub>)</sup>,b<sup>(n<sub>u</sub>)</sup>) = Σ<sub>j=1</sub><sup>n<sub>u</sub></sup> [ (1/2m<sup>(j)</sup>) Σ<sub>{i:r(i,j)=1}</sub> (w<sup>(j)</sup>·X<sup>(i)</sup> + b<sup>(j)</sup> − y(i,j))² + regularisation ]</code>
+        <br><br>
+      </li>
+      <li>Minimise this combined cost using gradient descent or any other optimisation algorithm to obtain all parameters at once.</li>
+      <li>This is equivalent to training n<sub>u</sub> independent linear regression models, one per user, sharing the same movie feature vectors X<sup>(i)</sup>.</li>
+    </ul>
+    <div class="callout">
+      <strong>Limitation:</strong> This approach requires pre-built movie features (e.g. romance score, action score). In practice, these are hard to obtain. The next topic removes this requirement.
+    </div>
+  </div>
+
+  <!-- 8. Learning Movie Features from Data -->
+  <div class="card">
+    <h2><span class="icon">🔎</span> Learning Movie Features from Data</h2>
+    <ul>
+      <li>What if we don't know the feature values x<sub>1</sub>, x<sub>2</sub> (romance/action scores) in advance? We can <strong>learn them from the ratings data</strong> — but only if we already have parameters w and b for the users.</li>
+      <li><strong>Intuition:</strong> If we know that Alice (w<sup>(1)</sup> = [5,0]) rated movie 1 as 5 stars, then w<sup>(1)</sup> · x<sup>(1)</sup> ≈ 5 implies x<sup>(1)</sup> ≈ [1, 0] (very romance, no action). Multiple users constrain what x must be.</li>
+      <li>This only works <em>because</em> multiple users have rated the same movies — with just one user there is not enough signal to recover the features from scratch.</li>
+    </ul>
+  </div>
+
+  <!-- 9. Cost Function for Learning Features x -->
+  <div class="card">
+    <h2><span class="icon">📐</span> Cost Function — Learning Features x<sup>(i)</sup></h2>
+    <ul>
+      <li>Given user parameters w<sup>(j)</sup>, b<sup>(j)</sup> for all j, the cost for learning the feature vector of a single movie i is:
+        <br><br>
+        <code>J(x<sup>(i)</sup>) = (1/2) Σ<sub>{j:r(i,j)=1}</sub> (w<sup>(j)</sup>·x<sup>(i)</sup> + b<sup>(j)</sup> − y(i,j))² + (λ/2) Σ<sub>k</sub> (x<sub>k</sub><sup>(i)</sup>)²</code>
+        <br><br>
+      </li>
+      <li>Sum only over users j who have rated movie i (r(i,j) = 1).</li>
+      <li>To learn features for <em>all</em> n<sub>m</sub> movies, sum this cost over i = 1 … n<sub>m</sub>.</li>
+    </ul>
+  </div>
+
+  <!-- 10. Collaborative Filtering — Combined Cost Function -->
+  <div class="card">
+    <h2><span class="icon">🤝</span> Collaborative Filtering — Combined Cost Function</h2>
+    <ul>
+      <li>The cost function for learning w and b (previous section) and the cost function for learning x share the same squared-error term. Combining them gives:
+        <br><br>
+        <code>J(w, b, x) = (1/2) Σ<sub>(i,j): r(i,j)=1</sub> (w<sup>(j)</sup>·x<sup>(i)</sup> + b<sup>(j)</sup> − y(i,j))²<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ (λ/2) Σ<sub>j,k</sub> (w<sub>k</sub><sup>(j)</sup>)² + (λ/2) Σ<sub>i,k</sub> (x<sub>k</sub><sup>(i)</sup>)²</code>
+        <br><br>
+      </li>
+      <li>The sum runs over <strong>all (i,j) pairs where a rating exists</strong> — equivalent whether you sum over users first or movies first.</li>
+      <li>Minimise this jointly over <em>all three sets of parameters</em>: w, b, and x.</li>
+      <li><strong>Note:</strong> x is now a <em>parameter</em> to be learned, not a fixed input — unlike standard linear regression.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key insight:</strong> Summing over users first or movies first covers exactly the same set of rated (i,j) pairs — the two formulations are equivalent.
+    </div>
+  </div>
+
+  <!-- 11. Optimisation via Gradient Descent -->
+  <div class="card">
+    <h2><span class="icon">📉</span> Optimisation via Gradient Descent</h2>
+    <ul>
+      <li>Apply gradient descent (or another optimiser) with respect to all parameters simultaneously:
+        <br><br>
+        <code>w<sub>k</sub><sup>(j)</sup> := w<sub>k</sub><sup>(j)</sup> − α · ∂J/∂w<sub>k</sub><sup>(j)</sup></code><br>
+        <code>b<sup>(j)</sup> &nbsp;&nbsp;&nbsp;:= b<sup>(j)</sup> &nbsp;&nbsp;&nbsp;− α · ∂J/∂b<sup>(j)</sup></code><br>
+        <code>x<sub>k</sub><sup>(i)</sup> &nbsp;:= x<sub>k</sub><sup>(i)</sup> &nbsp;− α · ∂J/∂x<sub>k</sub><sup>(i)</sup></code>
+        <br><br>
+      </li>
+      <li>Updating all three simultaneously converges to a good set of user parameters <strong>and</strong> movie features.</li>
+    </ul>
+  </div>
+
+  <!-- 12. Why It's Called "Collaborative Filtering" -->
+  <div class="card">
+    <h2><span class="icon">🌐</span> Why "Collaborative Filtering"?</h2>
+    <ul>
+      <li>Multiple users have rated the same movies <em>collaboratively</em> — together they provide enough signal to infer what the movies are like (the features x).</li>
+      <li>Those learned features then allow the algorithm to predict ratings for users who have not yet seen those movies.</li>
+      <li>Users effectively <strong>collaborate</strong> — even without knowing each other — to help the system make better recommendations for everyone.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> Generalising collaborative filtering to <span class="term">binary labels</span> (liked/not liked, clicked/not clicked) instead of star ratings.
+    </div>
+  </div>
+
+  <!-- 13. Binary Labels in Collaborative Filtering -->
+  <div class="card">
+    <h2><span class="icon">👍</span> Binary Labels in Collaborative Filtering</h2>
+    <ul>
+      <li>Instead of 1–5 star ratings, many real-world systems only have <strong>binary feedback</strong>: did the user engage with the item or not?</li>
+      <li><strong>Label meanings:</strong>
+        <ul>
+          <li><strong>1</strong> — user engaged after being shown the item (watched to the end, clicked, liked, favourited, purchased, spent ≥ 30 seconds).</li>
+          <li><strong>0</strong> — user was shown the item but did not engage.</li>
+          <li><strong>?</strong> — user has not yet been shown the item.</li>
+        </ul>
+      </li>
+    </ul>
+    <table>
+      <thead>
+        <tr><th>Domain</th><th>Label 1</th><th>Label 0</th><th>?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Online shopping</td><td>Purchased item</td><td>Did not purchase</td><td>Never shown</td></tr>
+        <tr><td>Social media</td><td>Liked / favourited</td><td>Did not like</td><td>Not yet shown</td></tr>
+        <tr><td>Video streaming</td><td>Watched ≥ 30 sec</td><td>Watched &lt; 30 sec</td><td>Not yet shown</td></tr>
+        <tr><td>Online advertising</td><td>Clicked ad</td><td>Did not click</td><td>Ad not yet shown</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 14. From Linear to Logistic — Adapting the Model -->
+  <div class="card">
+    <h2><span class="icon">🔀</span> Adapting the Model for Binary Labels</h2>
+    <ul>
+      <li><strong>Star-rating model (regression):</strong>
+        <br><br>
+        <code>ŷ(i,j) = w<sup>(j)</sup> · x<sup>(i)</sup> + b<sup>(j)</sup></code>
+        <br><br>
+      </li>
+      <li><strong>Binary-label model (logistic):</strong> predict the <em>probability</em> that y(i,j) = 1:
+        <br><br>
+        <code>P(y(i,j) = 1) = g(w<sup>(j)</sup> · x<sup>(i)</sup> + b<sup>(j)</sup>)</code>
+        <br><br>
+        where <code>g(z) = 1 / (1 + e<sup>−z</sup>)</code> is the <span class="term">logistic (sigmoid) function</span>.
+      </li>
+      <li>This mirrors the transition from linear regression to logistic regression in course 1 — same idea applied to the collaborative filtering setting.</li>
+    </ul>
+  </div>
+
+  <!-- 15. Binary Cross-Entropy Cost Function -->
+  <div class="card">
+    <h2><span class="icon">💰</span> Cost Function — Binary Labels</h2>
+    <ul>
+      <li>The squared-error cost is replaced by the <span class="term">binary cross-entropy loss</span> used in logistic regression:
+        <br><br>
+        <code>L(f, y) = −y · log(f) − (1 − y) · log(1 − f)</code>
+        <br><br>
+        where <code>f = g(w<sup>(j)</sup> · x<sup>(i)</sup> + b<sup>(j)</sup>)</code>.
+      </li>
+      <li>The full cost function over all rated pairs becomes:
+        <br><br>
+        <code>J(w, b, x) = Σ<sub>(i,j): r(i,j)=1</sub> L(f(x<sup>(i)</sup>, w<sup>(j)</sup>, b<sup>(j)</sup>), y(i,j)) + regularisation</code>
+        <br><br>
+      </li>
+      <li>The regularisation terms (λ/2 · Σw² and λ/2 · Σx²) remain the same as before.</li>
+      <li>Minimise this over w, b, and x using gradient descent — the structure of the algorithm is otherwise identical to the star-rating version.</li>
+    </ul>
+    <div class="callout">
+      <strong>Impact:</strong> This generalisation dramatically expands the range of applications: any system that logs clicks, purchases, likes, or watch-time can now be addressed with collaborative filtering.
+    </div>
+  </div>
+
+  <!-- 16. Mean Normalisation -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Mean Normalisation</h2>
+    <ul>
+      <li>For recommender systems with numerical ratings (0–5 stars), <span class="term">mean normalisation</span> makes the algorithm run faster and produce much better predictions for new or sparse users.</li>
+      <li><strong>The problem without it:</strong> A new user Eve who has rated no movies contributes nothing to the squared-error term. Regularisation pushes w<sup>(5)</sup> → [0, 0] and b<sup>(5)</sup> → 0, so the algorithm predicts 0 stars for every movie — unhelpful.</li>
+    </ul>
+  </div>
+
+  <!-- 17. Mean Normalisation — Procedure -->
+  <div class="card">
+    <h2><span class="icon">🧮</span> Mean Normalisation — Procedure</h2>
+    <ol>
+      <li>Collect all ratings (including ?s) into a matrix Y of shape n<sub>m</sub> × n<sub>u</sub>.</li>
+      <li>For each movie i, compute μ<sub>i</sub> = average rating across all users who <em>have</em> rated it:
+        <br><br>
+        <code>μ = [2.5, 2.5, 2.0, 2.25, 1.25]</code> (for the five-movie example)
+        <br><br>
+      </li>
+      <li>Subtract μ<sub>i</sub> from every rating of movie i:
+        <br><br>
+        <code>Y'(i,j) = Y(i,j) − μ<sub>i</sub></code> (for all j where r(i,j) = 1)
+        <br><br>
+        e.g. a 5-star rating for movie 1 becomes 5 − 2.5 = <strong>2.5</strong>; a 0-star rating becomes 0 − 2.25 = <strong>−2.25</strong>.
+      </li>
+      <li>Train the collaborative filtering algorithm on the normalised ratings Y'.</li>
+      <li>When predicting, <strong>add μ<sub>i</sub> back</strong>:
+        <br><br>
+        <code>predicted rating = w<sup>(j)</sup> · x<sup>(i)</sup> + b<sup>(j)</sup> + μ<sub>i</sub></code>
+      </li>
+    </ol>
+  </div>
+
+  <!-- 18. Effect on New / Sparse Users -->
+  <div class="card">
+    <h2><span class="icon">👤</span> Effect on New / Sparse Users</h2>
+    <ul>
+      <li>With mean normalisation, a new user Eve still learns w<sup>(5)</sup> = [0,0] and b<sup>(5)</sup> = 0 (no ratings to learn from), but her predicted rating for movie i becomes:
+        <br><br>
+        <code>0 · x<sup>(i)</sup> + 0 + μ<sub>i</sub> = μ<sub>i</sub></code>
+        <br><br>
+        i.e. the algorithm predicts the <strong>average rating other users gave that movie</strong> — much more sensible than 0 stars for everything.
+      </li>
+      <li>As Eve rates movies over time, her w and b will be updated away from zero and her predictions will personalise.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key benefit:</strong> Mean normalisation acts as a warm start — new users get the crowd average instead of zero, making early recommendations immediately reasonable.
+    </div>
+  </div>
+
+  <!-- 19. Rows vs. Columns — What to Normalise -->
+  <div class="card">
+    <h2><span class="icon">📊</span> Rows vs. Columns — What to Normalise</h2>
+    <ul>
+      <li><strong>Normalise rows (movies):</strong> Handles new users with few or no ratings. <em>Recommended approach.</em></li>
+      <li><strong>Normalise columns (users):</strong> Would help if a brand-new movie has no ratings yet. Less important in practice — a movie with no ratings probably shouldn't be shown to many users yet anyway.</li>
+      <li>For this week's practice lab, normalising rows only is sufficient.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> Implementing collaborative filtering in <span class="term">TensorFlow</span>, including how to use auto-differentiation to compute gradients automatically.
+    </div>
+  </div>
+
+  <!-- 20. Implementing Collaborative Filtering in TensorFlow -->
+  <div class="card">
+    <h2><span class="icon">⚙️</span> Implementing Collaborative Filtering in TensorFlow</h2>
+    <ul>
+      <li>TensorFlow is not just for neural networks — it is also a great tool for implementing other learning algorithms like collaborative filtering.</li>
+      <li>The key benefit: <strong>automatic differentiation (Auto Diff)</strong>. You only need to implement the cost function J; TensorFlow computes all derivatives for you automatically.</li>
+      <li>This removes the need to manually derive and code partial derivatives with respect to w, b, and x.</li>
+      <li>Once you have automatic gradients, you are also free to use more powerful optimisers beyond plain gradient descent — such as the <span class="term">Adam optimiser</span>.</li>
+    </ul>
+  </div>
+
+  <!-- 21. Auto Diff with Gradient Tape -->
+  <div class="card">
+    <h2><span class="icon">📼</span> Auto Diff — Gradient Tape</h2>
+    <ul>
+      <li>TensorFlow's <span class="term">gradient tape</span> records the sequence of operations used to compute J, then automatically differentiates through them.</li>
+      <li><strong>Simple example</strong> — minimising J = (wx − 1)²:
+        <br><br>
+        <code>w = tf.Variable(3.0) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# declare w as a trainable variable<br>
+with tf.GradientTape() as tape:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fwx = w * x<br>
+&nbsp;&nbsp;&nbsp;&nbsp;J = (fwx - y) ** 2<br>
+dJdw = tape.gradient(J, w) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# derivative computed automatically<br>
+w.assign_add(-alpha * dJdw) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# gradient descent update</code>
+        <br><br>
+      </li>
+      <li>TensorFlow knows to differentiate with respect to w because it was declared as a <code>tf.Variable</code>.</li>
+      <li><strong>Auto Diff</strong> is the technically correct term; <em>Auto Grad</em> refers to a specific software package but is often used loosely for the same concept. PyTorch also supports this feature.</li>
+    </ul>
+  </div>
+
+  <!-- 22. Full Collaborative Filtering in TensorFlow -->
+  <div class="card">
+    <h2><span class="icon">🧩</span> Full Collaborative Filtering — TensorFlow Recipe</h2>
+    <ul>
+      <li>Declare x, w, b as <code>tf.Variable</code>s (parameters to be learned).</li>
+      <li>Use the <strong>Adam optimiser</strong> instead of plain gradient descent:
+        <br><br>
+        <code>optimizer = keras.optimizers.Adam(learning_rate=1e-1)</code>
+        <br><br>
+      </li>
+      <li>For each iteration:
+        <ol>
+          <li>Use <code>tf.GradientTape</code> to compute the cost J(x, w, b) — the normalised collaborative filtering cost function.</li>
+          <li>Call <code>tape.gradient(J, [x, w, b])</code> to get all three gradients at once.</li>
+          <li>Call <code>optimizer.apply_gradients(zip(grads, [x, w, b]))</code> to update all parameters.</li>
+        </ol>
+      </li>
+      <li>The cost function J takes as inputs: x, w, b, the mean-normalised ratings Y_norm, the indicator matrix r, n<sub>u</sub>, n<sub>m</sub>, and the regularisation parameter λ.</li>
+    </ul>
+    <div class="callout">
+      <strong>Why not use model.fit?</strong> The collaborative filtering cost function does not fit the standard dense-layer structure, so the usual <code>model.compile / model.fit</code> recipe cannot be used. Instead, we implement J manually and let TensorFlow handle the rest via Auto Diff.
+    </div>
+  </div>
+
+  <!-- 23. Gradient Descent Update Rules (Reference) -->
+  <div class="card">
+    <h2><span class="icon">📉</span> Gradient Descent Update Rules (Reference)</h2>
+    <ul>
+      <li>If using plain gradient descent instead of Adam, the updates at each iteration are:
+        <br><br>
+        <code>w<sup>(j)</sup> := w<sup>(j)</sup> − α · ∂J/∂w<sup>(j)</sup></code><br>
+        <code>b<sup>(j)</sup> := b<sup>(j)</sup> − α · ∂J/∂b<sup>(j)</sup></code><br>
+        <code>x<sup>(i)</sup> := x<sup>(i)</sup> − α · ∂J/∂x<sup>(i)</sup></code>
+        <br><br>
+      </li>
+      <li>All three sets of parameters are updated simultaneously each iteration.</li>
+      <li>With TensorFlow's Auto Diff you never need to derive these partial derivatives by hand.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> How to find <span class="term">related items</span> — given one movie, how do you find other movies similar to it using the learned feature vectors?
+    </div>
+  </div>
+
+  <!-- 24. Finding Related Items -->
+  <div class="card">
+    <h2><span class="icon">🔗</span> Finding Related Items</h2>
+    <ul>
+      <li>After training, every item i has a learned feature vector x<sup>(i)</sup>. These features collectively describe what the item is like — even if individual features are hard to interpret on their own.</li>
+      <li>To find items similar to item i, find item k whose feature vector x<sup>(k)</sup> is closest to x<sup>(i)</sup> using the <span class="term">squared distance</span>:
+        <br><br>
+        <code>‖x<sup>(k)</sup> − x<sup>(i)</sup>‖² = Σ<sub>l=1</sub><sup>n</sup> (x<sub>l</sub><sup>(k)</sup> − x<sub>l</sub><sup>(i)</sup>)²</code>
+        <br><br>
+      </li>
+      <li>Find the 5–10 items with the <strong>smallest squared distance</strong> to x<sup>(i)</sup> → these are the most related items.</li>
+      <li>This is how websites show "customers also viewed" or "movies similar to this one."</li>
+    </ul>
+    <div class="callout">
+      <strong>Note:</strong> The learned features x<sup>(i)</sup> are often hard to interpret individually, but collectively they capture meaningful properties of each item that make distance a useful similarity measure.
+    </div>
+  </div>
+
+  <!-- 25. Limitations of Collaborative Filtering -->
+  <div class="card">
+    <h2><span class="icon">⚠️</span> Limitations of Collaborative Filtering</h2>
+    <ul>
+      <li><strong>Cold start problem:</strong>
+        <ul>
+          <li><em>New item:</em> A newly published movie with very few ratings is hard to rank accurately — there is not enough signal in the ratings yet.</li>
+          <li><em>New user:</em> A user who has rated only a few items will get less personalised recommendations. Mean normalisation helps, but the problem remains.</li>
+        </ul>
+      </li>
+      <li><strong>Side information is not naturally used:</strong> Collaborative filtering has no built-in way to incorporate extra knowledge you may already have, such as:
+        <ul>
+          <li><em>About movies:</em> genre, cast, studio, budget, release year.</li>
+          <li><em>About users:</em> age, gender, location (inferrable from IP), expressed genre preferences, device type (mobile vs desktop), even web browser — all of which can be surprisingly predictive of preferences.</li>
+        </ul>
+      </li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> <span class="term">Content-based filtering</span> — a state-of-the-art technique that directly addresses both limitations by incorporating rich side information about users and items.
+    </div>
+  </div>
+
+  <!-- 26. Collaborative vs. Content-Based Filtering -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Collaborative vs. Content-Based Filtering</h2>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Collaborative Filtering</th>
+          <th>Content-Based Filtering</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Core idea</strong></td>
+          <td>Recommend items based on ratings from users who rated things similarly to you</td>
+          <td>Recommend items by matching <em>features of users</em> with <em>features of items</em></td>
+        </tr>
+        <tr>
+          <td><strong>Inputs</strong></td>
+          <td>Only ratings r(i,j) and y(i,j)</td>
+          <td>Ratings <em>plus</em> rich feature vectors for each user and each item</td>
+        </tr>
+        <tr>
+          <td><strong>Cold start</strong></td>
+          <td>Struggles with new users / new items</td>
+          <td>Can handle new users / items if features are available</td>
+        </tr>
+        <tr>
+          <td><strong>Side information</strong></td>
+          <td>Not used</td>
+          <td>Directly incorporated into feature vectors</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 27. User & Item Feature Vectors -->
+  <div class="card">
+    <h2><span class="icon">📋</span> User &amp; Item Feature Vectors</h2>
+    <ul>
+      <li><strong>User features x<sub>u</sub><sup>(j)</sup></strong> for user j may include:
+        <ul>
+          <li>Age, gender (one-hot), country (one-hot, ~200 values).</li>
+          <li>Which of the top-1,000 movies the user has already watched (1,000 binary features).</li>
+          <li>Average rating the user has given per genre (e.g. average romance rating, average action rating) — derived from their own ratings.</li>
+        </ul>
+      </li>
+      <li><strong>Item features x<sub>m</sub><sup>(i)</sup></strong> for movie i may include:
+        <ul>
+          <li>Year of release, genre(s).</li>
+          <li>Critic review sentiment features.</li>
+          <li>Average rating of the movie overall, or per country / demographic.</li>
+        </ul>
+      </li>
+      <li>User and item feature vectors can be <strong>different sizes</strong> — e.g. x<sub>u</sub> may have 1,500 numbers while x<sub>m</sub> has only 50.</li>
+      <li>Features derived from ratings (e.g. average genre rating) are perfectly valid even though they depend on user behaviour.</li>
+    </ul>
+  </div>
+
+  <!-- 28. The Content-Based Filtering Model -->
+  <div class="card">
+    <h2><span class="icon">🤝</span> The Content-Based Filtering Model</h2>
+    <ul>
+      <li>The goal is to compute two compact vectors from the raw features:
+        <ul>
+          <li><span class="term">v<sub>u</sub><sup>(j)</sup></span> — a vector summarising user j's preferences, computed from x<sub>u</sub><sup>(j)</sup>.</li>
+          <li><span class="term">v<sub>m</sub><sup>(i)</sup></span> — a vector summarising movie i's properties, computed from x<sub>m</sub><sup>(i)</sup>.</li>
+        </ul>
+      </li>
+      <li>Predicted rating of user j for movie i:
+        <br><br>
+        <code>ŷ(i,j) = v<sub>u</sub><sup>(j)</sup> · v<sub>m</sub><sup>(i)</sup></code>
+        <br><br>
+        (The b<sup>(j)</sup> bias term from collaborative filtering is dropped — it has negligible effect here.)
+      </li>
+      <li><strong>Critical constraint:</strong> v<sub>u</sub> and v<sub>m</sub> must have the <em>same dimension</em> (e.g. both 32 numbers) so that the dot product is defined — even though the raw input features x<sub>u</sub> and x<sub>m</sub> can be different sizes.</li>
+    </ul>
+    <div class="callout">
+      <strong>Intuition:</strong> If v<sub>u</sub> = [4.9, 0.1, …] encodes "loves romance, dislikes action" and v<sub>m</sub> = [4.5, 0.2, …] encodes "strongly romantic, barely action", their dot product will be large — correctly predicting a high rating.
+    </div>
+  </div>
+
+  <!-- 29. Deep Learning for Content-Based Filtering -->
+  <div class="card">
+    <h2><span class="icon">🧠</span> Deep Learning for Content-Based Filtering</h2>
+    <ul>
+      <li>Two separate neural networks are used to compute the compact vectors:
+        <ul>
+          <li><strong>User network:</strong> takes x<sub>u</sub> (age, gender, country, …) as input → outputs v<sub>u</sub> (e.g. 32 numbers).</li>
+          <li><strong>Movie network:</strong> takes x<sub>m</sub> (release year, cast, genre, …) as input → outputs v<sub>m</sub> (e.g. 32 numbers).</li>
+        </ul>
+      </li>
+      <li>The output layer of each network has <strong>32 units</strong> (not 1 unit as in a typical regression network). Both output layers must have the <em>same dimension</em> so that a dot product can be taken.</li>
+      <li>The two networks may have different numbers of hidden layers and units per layer — only the output size must match.</li>
+      <li><strong>Predicted rating:</strong>
+        <br><br>
+        <code>ŷ(i,j) = v<sub>u</sub><sup>(j)</sup> · v<sub>m</sub><sup>(i)</sup></code>
+        <br><br>
+        For binary labels, wrap in the sigmoid function: <code>g(v<sub>u</sub><sup>(j)</sup> · v<sub>m</sub><sup>(i)</sup>)</code>.
+      </li>
+    </ul>
+    <div class="callout">
+      <strong>Architecture note:</strong> The two networks can be drawn as a single combined diagram — user features feed into the top half, movie features into the bottom half, and the dot product of both outputs gives the prediction.
+    </div>
+  </div>
+
+  <!-- 30. Training the Combined Network -->
+  <div class="card">
+    <h2><span class="icon">🏋️</span> Training the Combined Network</h2>
+    <ul>
+      <li>Both networks are trained <strong>jointly</strong> using a single cost function — there is no separate training procedure for each:
+        <br><br>
+        <code>J = Σ<sub>(i,j): r(i,j)=1</sub> (v<sub>u</sub><sup>(j)</sup> · v<sub>m</sub><sup>(i)</sup> − y(i,j))² + regularisation</code>
+        <br><br>
+      </li>
+      <li>Gradient descent (or Adam) tunes the parameters of <em>both</em> networks simultaneously so that the dot products match the observed ratings as closely as possible.</li>
+      <li>Standard neural network regularisation can be added to keep parameter values small and prevent overfitting.</li>
+      <li>This is an example of putting two neural networks together to work in concert — one of the strengths of the neural network paradigm over other ML approaches.</li>
+    </ul>
+  </div>
+
+  <!-- 31. Finding Similar Items with Content-Based Filtering -->
+  <div class="card">
+    <h2><span class="icon">🔗</span> Finding Similar Items with Content-Based Filtering</h2>
+    <ul>
+      <li>After training, each movie i has a learned vector v<sub>m</sub><sup>(i)</sup> of length 32 that encodes its properties.</li>
+      <li>To find movies similar to movie i, look for movie k with the smallest squared distance:
+        <br><br>
+        <code>‖v<sub>m</sub><sup>(k)</sup> − v<sub>m</sub><sup>(i)</sup>‖²</code>
+        <br><br>
+      </li>
+      <li><strong>Pre-computation:</strong> Because these distances depend only on the movie vectors (not on who is browsing), you can run an overnight compute job to pre-compute the top-10 or top-20 similar movies for every movie in the catalog. When a user visits a movie page, the results are already ready — no real-time computation needed.</li>
+      <li>Pre-computation becomes especially important at scale when the catalog contains millions of items.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> How to scale content-based filtering to very large item catalogs efficiently.
+    </div>
+  </div>
+
+  <!-- 32. Scaling Up — Retrieval & Ranking -->
+  <div class="card">
+    <h2><span class="icon">⚡</span> Scaling Up — Retrieval &amp; Ranking</h2>
+    <ul>
+      <li>Large-scale catalogs make it infeasible to run full neural network inference on every item for every user visit:
+        <ul>
+          <li>Movie streaming sites: thousands of movies.</li>
+          <li>Ad systems: millions of ads.</li>
+          <li>Music streaming: tens of millions of songs.</li>
+          <li>Online shopping: millions to tens of millions of products.</li>
+        </ul>
+      </li>
+      <li>Solution: a <strong>two-stage pipeline</strong> — <span class="term">Retrieval</span> then <span class="term">Ranking</span>.</li>
+    </ul>
+  </div>
+
+  <!-- 33. Stage 1 — Retrieval -->
+  <div class="card">
+    <h2><span class="icon">🔍</span> Stage 1 — Retrieval</h2>
+    <ul>
+      <li>Quickly generate a large list of <strong>plausible candidates</strong> — broad coverage matters more than precision here. It is okay to include items the user might not like.</li>
+      <li><strong>Example retrieval strategies (combined):</strong>
+        <ul>
+          <li>For each of the last 10 movies the user watched, pull the 10 most similar movies (using pre-computed v<sub>m</sub> distances) → up to 100 candidates.</li>
+          <li>For the user's top-3 most-watched genres, add the top-10 movies per genre → up to 30 more.</li>
+          <li>Add the top-20 movies in the user's country → 20 more.</li>
+        </ul>
+      </li>
+      <li>Combine all retrieved items into one list; remove duplicates and items the user has already watched or purchased.</li>
+      <li>Finding similar movies is <strong>pre-computed</strong> (look-up table) — retrieval is therefore very fast.</li>
+    </ul>
+  </div>
+
+  <!-- 34. Stage 2 — Ranking -->
+  <div class="card">
+    <h2><span class="icon">🏆</span> Stage 2 — Ranking</h2>
+    <ul>
+      <li>Take the retrieved list (e.g. ~100–500 items) and rank them using the full neural network model.</li>
+      <li><strong>Efficient inference trick:</strong> Pre-compute v<sub>m</sub> for all movies offline. At serving time:
+        <ol>
+          <li>Run the <em>user network</em> once to compute v<sub>u</sub> for the current user.</li>
+          <li>Take the dot product of v<sub>u</sub> with the pre-computed v<sub>m</sub> vectors of only the retrieved candidates.</li>
+        </ol>
+        Full network inference is only needed once per user visit, not once per item.
+      </li>
+      <li>Rank retrieved items by predicted rating (or probability of engagement) and display the top results.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key benefit:</strong> Retrieval prunes millions of items down to hundreds cheaply. Ranking then applies the accurate model to only those hundreds — giving both <em>speed</em> and <em>accuracy</em>.
+    </div>
+  </div>
+
+  <!-- 35. Tuning Retrieval Size -->
+  <div class="card">
+    <h2><span class="icon">🎛️</span> Tuning Retrieval Size</h2>
+    <ul>
+      <li>Retrieving more items → better ranking quality, but slower pipeline.</li>
+      <li>Use <strong>offline experiments</strong> to find the sweet spot: measure how much the predicted ratings of top results improve as you increase retrieval size (e.g. 100 vs. 500 vs. 1,000 items).</li>
+      <li>If retrieving 500 instead of 100 items substantially increases the estimated probability that recommended items are ones the user will actually like, the extra compute cost may be justified.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> Ethical considerations in recommender systems — how they can cause harm and how to build them responsibly.
+    </div>
+  </div>
+
+  <!-- 36. Ethical Considerations in Recommender Systems -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Ethical Considerations in Recommender Systems</h2>
+    <ul>
+      <li>Recommender systems are highly profitable — but some use cases have left users and society worse off.</li>
+      <li><strong>Common optimisation targets and their implications:</strong></li>
+    </ul>
+    <table>
+      <thead>
+        <tr><th>What is optimised</th><th>Assessment</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Movies most likely to be rated 5 stars</td><td>Generally fine — directly serves user preferences</td></tr>
+        <tr><td>Products most likely to be purchased</td><td>Generally fine — aligns user and business interests</td></tr>
+        <tr><td>Ads most likely to be clicked (weighted by bid)</td><td>Profit-maximising; can amplify exploitative businesses</td></tr>
+        <tr><td>Products that generate the largest profit margin</td><td>May not show users the most relevant items; lack of transparency</td></tr>
+        <tr><td>Content that maximises watch time / engagement</td><td>Can amplify conspiracy theories, hate, and toxic content</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 37. The Advertising Amplification Problem -->
+  <div class="card">
+    <h2><span class="icon">📢</span> The Advertising Amplification Problem</h2>
+    <ul>
+      <li>Ad-based recommender systems create a feedback loop: the more profitable a business, the higher it can bid for ads, the more traffic it receives, and the more profitable it becomes.</li>
+      <li><strong>Virtuous cycle (good business):</strong> A travel company that genuinely serves customers well → more profit → higher ad bids → more traffic → more customers served well.</li>
+      <li><strong>Vicious cycle (harmful business):</strong> A payday loan company that exploits customers → more profit from exploitation → higher ad bids → more traffic → more customers exploited.</li>
+      <li>The same feedback mechanism that rewards good businesses can also reward the most exploitative ones — this is a fundamental tension in ad-funded recommender systems.</li>
+    </ul>
+    <div class="callout">
+      <strong>Possible amelioration:</strong> Refuse to serve ads from exploitative businesses — but defining what counts as "exploitative" is genuinely difficult and requires open debate and diverse perspectives.
+    </div>
+  </div>
+
+  <!-- 38. Engagement Maximisation & Harmful Content -->
+  <div class="card">
+    <h2><span class="icon">🔥</span> Engagement Maximisation &amp; Harmful Content</h2>
+    <ul>
+      <li>Optimising for watch time or time-on-site has been widely reported to cause large platforms to amplify:
+        <ul>
+          <li>Conspiracy theories</li>
+          <li>Hate speech and toxic content</li>
+        </ul>
+        because such content is highly engaging even when harmful to individuals and society.
+      </li>
+      <li><strong>Partial amelioration:</strong> Filter out hate speech, fraud, scams, and certain violent content before it enters the recommendation pool.</li>
+      <li>Defining exactly what to filter is surprisingly difficult — companies, individuals, and governments all need to continue working through these questions.</li>
+    </ul>
+  </div>
+
+  <!-- 39. Transparency & Responsible Building -->
+  <div class="card">
+    <h2><span class="icon">🔎</span> Transparency &amp; Responsible Building</h2>
+    <ul>
+      <li>Many users assume a website recommends things it thinks they will enjoy — most do not realise recommendations are often optimised for profit rather than user satisfaction.</li>
+      <li><strong>Recommendation:</strong> Be transparent with users about the criteria used to decide what to show them. Transparency builds trust and encourages systems to be designed for user benefit.</li>
+      <li>When building any recommender system (or any ML system), ask:
+        <ul>
+          <li>What benefits does this create?</li>
+          <li>What potential harms could it cause?</li>
+          <li>Have diverse perspectives been invited to weigh in?</li>
+        </ul>
+      </li>
+    </ul>
+    <div class="callout">
+      <strong>Guiding principle:</strong> Only build things you genuinely believe will make people better off. The power and profitability of recommender systems makes thoughtful, ethical design all the more important.
+    </div>
+  </div>
+
+  <!-- 40. Implementing Content-Based Filtering in TensorFlow -->
+  <div class="card">
+    <h2><span class="icon">💻</span> Implementing Content-Based Filtering in TensorFlow</h2>
+    <ul>
+      <li>Both the user network and the item (movie) network are built as <strong>sequential models</strong> with dense hidden layers (relu activation) and a <strong>32-unit output layer</strong>.</li>
+      <li><strong>User network sketch:</strong>
+        <br><br>
+        <code>user_NN = tf.keras.models.Sequential([<br>
+&nbsp;&nbsp;Dense(256, activation='relu'),<br>
+&nbsp;&nbsp;Dense(128, activation='relu'),<br>
+&nbsp;&nbsp;Dense(32)  # outputs v_u<br>
+])</code>
+        <br><br>
+      </li>
+      <li><strong>Item network</strong> has the same structure, outputting v<sub>m</sub> (32 numbers).</li>
+      <li>After computing v<sub>u</sub> and v<sub>m</sub>, each vector is <span class="term">L2-normalised</span> (scaled to length 1) — this makes the algorithm work noticeably better:
+        <br><br>
+        <code>vu = tf.linalg.l2_normalize(user_NN(user_input), axis=1)<br>
+vm = tf.linalg.l2_normalize(item_NN(item_input), axis=1)</code>
+        <br><br>
+      </li>
+      <li>The dot product is computed using a dedicated Keras layer:
+        <br><br>
+        <code>output = tf.keras.layers.Dot(axes=1)([vu, vm])</code>
+        <br><br>
+      </li>
+      <li>The full model is assembled by declaring inputs (user features + item features) and the output (dot product):
+        <br><br>
+        <code>model = tf.keras.Model([user_input, item_input], output)</code>
+        <br><br>
+      </li>
+      <li>Compile and train with <strong>mean squared error</strong> cost function (for star ratings) or binary cross-entropy (for binary labels).</li>
+    </ul>
+    <div class="callout">
+      <strong>Key detail:</strong> L2-normalising v<sub>u</sub> and v<sub>m</sub> before taking the dot product constrains both vectors to the unit sphere, which stabilises training and improves recommendation quality.
+    </div>
+  </div>
+
+  <!-- 41. Optional — Principal Components Analysis (PCA) Overview -->
+  <div class="card">
+    <h2><span class="icon">📉</span> Optional · Principal Components Analysis (PCA) — Overview</h2>
+    <ul>
+      <li><span class="term">PCA (Principal Components Analysis)</span> is an unsupervised learning algorithm used primarily for <strong>data visualisation</strong>.</li>
+      <li><strong>Core problem it solves:</strong> When a dataset has many features (10, 50, 1,000+), it is impossible to directly plot. PCA compresses the data down to 2 or 3 features so it can be visualised on a screen or paper.</li>
+      <li>PCA does not simply discard features — it finds new axes that capture the most variation in the data.</li>
+    </ul>
+  </div>
+
+  <!-- 42. PCA — Intuition with Examples -->
+  <div class="card">
+    <h2><span class="icon">🚗</span> PCA — Intuition with Examples</h2>
+    <ul>
+      <li><strong>Example 1 — Width barely varies:</strong> Car length (x<sub>1</sub>) varies a lot; car width (x<sub>2</sub>) barely varies (road constraints keep cars ~1.8m wide). PCA essentially keeps x<sub>1</sub> and drops x<sub>2</sub>.</li>
+      <li><strong>Example 2 — Correlated features:</strong> Car length (x<sub>1</sub>) and car height (x<sub>2</sub>) both vary significantly and are correlated — bigger cars tend to be both longer and taller. Dropping either alone would lose information.</li>
+      <li><strong>PCA solution for Example 2:</strong> Find a new axis <strong>z</strong> that lies within the x<sub>1</sub>–x<sub>2</sub> plane and points in the direction of most variation. The coordinate of each car on z captures "overall size" — one number instead of two, with most information preserved.</li>
+      <li><strong>3-D to 2-D:</strong> If three-dimensional data essentially lies on a thin flat pancake inside 3-D space, PCA finds the two axes z<sub>1</sub> and z<sub>2</sub> of that pancake, reducing 3 features to 2 without much loss.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key idea:</strong> PCA replaces the original axes (x<sub>1</sub>, x<sub>2</sub>, …) with new axes (z<sub>1</sub>, z<sub>2</sub>, …) that capture the directions of greatest variance, then keeps only the top 2 or 3.
+    </div>
+  </div>
+
+  <!-- 43. PCA — Country Development Example -->
+  <div class="card">
+    <h2><span class="icon">🌍</span> PCA — Country Development Example</h2>
+    <ul>
+      <li>Suppose each country has 50 features: GDP, per-capita GDP, Human Development Index, life expectancy, etc.</li>
+      <li>PCA reduces these 50 features to 2 features z<sub>1</sub> and z<sub>2</sub>, which can then be plotted on a 2-D scatter chart.</li>
+      <li>The learned axes often have intuitive interpretations:
+        <ul>
+          <li>z<sub>1</sub> ≈ total country size / total GDP (larger countries score higher).</li>
+          <li>z<sub>2</sub> ≈ per-person economic activity / prosperity.</li>
+        </ul>
+      </li>
+      <li>Examples on the plot:
+        <ul>
+          <li>USA — large country, high per-person activity → upper right.</li>
+          <li>Singapore — small country, high per-person activity → lower right.</li>
+          <li>Large country with low per-person activity → lower left but far right on z<sub>1</sub>.</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 44. Why Use PCA? -->
+  <div class="card">
+    <h2><span class="icon">🔭</span> Why Use PCA?</h2>
+    <ul>
+      <li><strong>Visualisation:</strong> The primary use — plot high-dimensional data to understand its structure at a glance.</li>
+      <li><strong>Anomaly detection:</strong> Visualising the data can reveal unexpected patterns, outliers, or "something funny going on."</li>
+      <li><strong>Dimensionality reduction:</strong> Reducing features from "50-dimensional" to "2-dimensional" (these terms just mean 50 features vs. 2 features).</li>
+      <li>PCA is routinely one of the first things a data scientist runs on a new dataset to get a feel for the data before modelling.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> How the PCA algorithm actually works — finding the new axes and projecting data onto them.
+    </div>
+  </div>
+
+  <!-- 45. How PCA Works -->
+  <div class="card">
+    <h2><span class="icon">⚙️</span> How PCA Works</h2>
+    <ul>
+      <li><strong>Preprocessing (required before PCA):</strong>
+        <ul>
+          <li>Subtract the mean from each feature so all features have <strong>zero mean</strong>.</li>
+          <li>If features are on very different scales (e.g. house size in sq ft vs. number of bedrooms), apply <strong>feature scaling</strong> first.</li>
+        </ul>
+      </li>
+      <li>PCA then finds a new axis <strong>z</strong> such that when the data is <em>projected</em> onto z, the projected points retain the <strong>maximum possible variance</strong> (spread).</li>
+      <li><span class="term">Projection</span> means dropping a perpendicular line segment from each data point to the axis z — the foot of that perpendicular is the point's coordinate on z.</li>
+    </ul>
+  </div>
+
+  <!-- 46. Choosing the Principal Component -->
+  <div class="card">
+    <h2><span class="icon">📏</span> Choosing the Principal Component</h2>
+    <ul>
+      <li>Different axis orientations produce different amounts of spread in the projected points:
+        <ul>
+          <li>A <strong>bad axis</strong> squishes all projections close together → low variance → little information retained.</li>
+          <li>A <strong>good axis</strong> keeps projections spread apart → high variance → most information retained.</li>
+        </ul>
+      </li>
+      <li>The <span class="term">principal component</span> (first principal component) is the axis orientation that <strong>maximises variance</strong> in the projections. This is the axis PCA chooses when reducing to 1 dimension.</li>
+      <li><strong>Computing the projection:</strong> Given a data point with coordinates (x<sub>1</sub>, x<sub>2</sub>) and a unit vector pointing along z (e.g. [0.71, 0.71]):
+        <br><br>
+        <code>z = x · unit_vector = x<sub>1</sub>×0.71 + x<sub>2</sub>×0.71</code>
+        <br><br>
+        Example: point (2, 3) → z = 2×0.71 + 3×0.71 = <strong>3.55</strong>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 47. Multiple Principal Components -->
+  <div class="card">
+    <h2><span class="icon">📐</span> Multiple Principal Components</h2>
+    <ul>
+      <li>If you need more than one new axis (e.g. reducing to 2-D), each additional axis must be <strong>perpendicular (90°)</strong> to all previously chosen axes.</li>
+      <li>This ensures the axes capture independent directions of variation.</li>
+      <li>Example: 50 features → find 3 principal components → z<sub>1</sub>, z<sub>2</sub>, z<sub>3</sub> are all mutually perpendicular.</li>
+    </ul>
+  </div>
+
+  <!-- 48. PCA vs. Linear Regression -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> PCA vs. Linear Regression</h2>
+    <table>
+      <thead>
+        <tr><th></th><th>Linear Regression</th><th>PCA</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Type</strong></td>
+          <td>Supervised learning</td>
+          <td>Unsupervised learning</td>
+        </tr>
+        <tr>
+          <td><strong>Data</strong></td>
+          <td>Labelled (x and y)</td>
+          <td>Unlabelled (x only)</td>
+        </tr>
+        <tr>
+          <td><strong>Goal</strong></td>
+          <td>Predict y from x</td>
+          <td>Find axes that preserve variance; reduce dimensions</td>
+        </tr>
+        <tr>
+          <td><strong>Distances minimised</strong></td>
+          <td>Vertical distances to the fitted line (along the y-axis)</td>
+          <td>Perpendicular distances to the chosen axis (treats all features equally)</td>
+        </tr>
+        <tr>
+          <td><strong>Feature treatment</strong></td>
+          <td>y is special; x features are inputs</td>
+          <td>All features treated equally</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Rule of thumb:</strong> Use linear regression to predict y. Use PCA to reduce the number of features for visualisation or further processing.
+    </div>
+  </div>
+
+  <!-- 49. Reconstruction -->
+  <div class="card">
+    <h2><span class="icon">🔁</span> Reconstruction</h2>
+    <ul>
+      <li>Given a compressed coordinate z, PCA can <strong>approximately recover</strong> the original features by multiplying z by the unit vector of the principal component:
+        <br><br>
+        <code>x̂ = z × unit_vector = 3.55 × [0.71, 0.71] ≈ [2.52, 2.52]</code>
+        <br><br>
+      </li>
+      <li>The original point was (2, 3); the reconstruction gives (2.52, 2.52) — a reasonable approximation from just one number.</li>
+      <li>Reconstruction is not exact because information is lost during compression, but it gives you back an approximation of the original space.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> Implementing PCA in Python using <span class="term">scikit-learn</span>.
+    </div>
+  </div>
+
+  <!-- 50. PCA in Code — scikit-learn -->
+  <div class="card">
+    <h2><span class="icon">🐍</span> PCA in Code — scikit-learn</h2>
+    <ul>
+      <li><strong>Steps to implement PCA:</strong>
+        <ol>
+          <li><em>(Optional)</em> Feature scale if features have very different ranges (e.g. GDP in trillions vs. small indices).</li>
+          <li>Call <code>pca.fit(X)</code> — scikit-learn automatically performs mean normalisation internally, so you do not need to do it separately.</li>
+          <li>Inspect <code>pca.explained_variance_ratio_</code> to see how much variance each principal component captures.</li>
+          <li>Call <code>pca.transform(X)</code> to project all training examples onto the new axes.</li>
+        </ol>
+      </li>
+      <li><strong>Reducing to 1 component:</strong>
+        <br><br>
+        <code>from sklearn.decomposition import PCA<br>
+pca = PCA(n_components=1)<br>
+pca.fit(X)<br>
+print(pca.explained_variance_ratio_)  # e.g. [0.992]<br>
+Z = pca.transform(X)  # each example becomes 1 number</code>
+        <br><br>
+        <code>explained_variance_ratio_ = [0.992]</code> means 1 axis captures <strong>99.2 %</strong> of the variance in the original data.
+      </li>
+      <li><strong>Reducing to 2 components:</strong> Change <code>n_components=2</code>. The ratios will sum to 1 (e.g. [0.992, 0.008]) — z<sub>1</sub> still captures 99.2 %, z<sub>2</sub> captures the remaining 0.8 %.</li>
+      <li>When reducing n-D data to n-D (no actual compression), reconstruction is exact and you recover the original data perfectly.</li>
+    </ul>
+    <div class="callout">
+      <strong>Tip:</strong> Always check <code>explained_variance_ratio_</code> before using the compressed data — if the top 2–3 components explain ≥ 95 % of variance, the compression is lossless enough for visualisation.
+    </div>
+  </div>
+
+  <!-- 51. PCA — When to Use It (and When Not To) -->
+  <div class="card">
+    <h2><span class="icon">✅</span> PCA — When to Use It (and When Not To)</h2>
+    <table>
+      <thead>
+        <tr><th>Use case</th><th>Recommended?</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Data visualisation</strong></td>
+          <td>✅ Most common &amp; recommended</td>
+          <td>Reduce to 2 or 3 features to plot and understand your dataset</td>
+        </tr>
+        <tr>
+          <td><strong>Data compression</strong></td>
+          <td>⚠️ Much less common today</td>
+          <td>Was useful when storage and bandwidth were expensive; modern infrastructure largely makes this unnecessary</td>
+        </tr>
+        <tr>
+          <td><strong>Speeding up supervised learning</strong></td>
+          <td>❌ Rarely recommended now</td>
+          <td>Used to help older algorithms (e.g. SVMs) with 1,000+ features; modern deep learning handles high-dimensional data directly and PCA's own cost offsets any gain</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Bottom line:</strong> In modern ML, the primary reason to reach for PCA is <em>visualisation</em> — reducing a high-dimensional dataset to 2 or 3 dimensions to gain intuition before or during modelling.
+    </div>
+  </div>
+
+  <footer>
+    Machine Learning Specialization · Recommender Systems · Notes compiled March 2026
+  </footer>
+
+</div>
+</body>
+</html>

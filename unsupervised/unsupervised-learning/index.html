@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unsupervised Learning — Lecture Notes</title>
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body>
+<div class="container">
+
+  <header class="notes-header">
+    <a href="../index.html" style="font-size:0.78rem; color:#6366f1; text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem; margin-bottom:1rem;">
+      ← Back to topics
+    </a>
+    <div class="tag">Machine Learning Specialization</div>
+    <h1>Unsupervised Learning</h1>
+    <p class="subtitle">Lecture notes · March 2026</p>
+  </header>
+
+  <!-- 1. Course Overview -->
+  <div class="card">
+    <h2><span class="icon">🗺️</span> Course Overview</h2>
+    <ul>
+      <li>This is the <strong>third and final course</strong> of the Machine Learning Specialization.</li>
+      <li>The first two courses focused heavily on <span class="term">supervised learning</span>; this course goes beyond it.</li>
+      <li>Three major topics are covered across three weeks: <em>unsupervised learning</em>, <em>recommender systems</em>, and <em>reinforcement learning</em>.</li>
+    </ul>
+    <div class="callout">
+      <strong>Goal:</strong> Equip you with a powerful extra set of tools so that, by the end of the specialization, you are well on your way to being an expert in machine learning.
+    </div>
+  </div>
+
+  <!-- 2. Week 1 — Unsupervised Learning -->
+  <div class="card">
+    <h2><span class="icon">🔍</span> Week 1 · Unsupervised Learning</h2>
+    <ul>
+      <li><span class="term">Clustering algorithms</span> — a way of grouping data into clusters without labelled examples.</li>
+      <li><span class="term">Anomaly detection</span> — identifying unusual data points that differ significantly from the norm.</li>
+      <li>Both techniques are widely used in <strong>important commercial applications</strong> by many companies today.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key idea:</strong> Unlike supervised learning, there are no labelled outputs — the algorithm must discover structure in the data on its own.
+    </div>
+  </div>
+
+  <!-- 3. Week 2 — Recommender Systems -->
+  <div class="card">
+    <h2><span class="icon">🛒</span> Week 2 · Recommender Systems</h2>
+    <ul>
+      <li>Powers product and movie recommendations on online shopping and video streaming platforms.</li>
+      <li>One of the <strong>most commercially important</strong> ML technologies — responsible for moving many billions of dollars of value.</li>
+      <li>Receives <em>surprisingly little academic attention</em> relative to its real-world impact.</li>
+      <li>Understanding recommender systems also gives insight into how <strong>online ad tech</strong> companies decide which ads to show you.</li>
+    </ul>
+  </div>
+
+  <!-- 4. Week 3 — Reinforcement Learning -->
+  <div class="card">
+    <h2><span class="icon">🤖</span> Week 3 · Reinforcement Learning</h2>
+    <ul>
+      <li>Famous for achieving <strong>superhuman performance</strong> on a variety of video games.</li>
+      <li>Also used to control different types of <em>robots</em> in the real world.</li>
+      <li>Still an <span class="term">emerging technology</span> — the number of commercial applications is not yet as large as other techniques, but it is growing.</li>
+      <li>Opens up a new frontier for what learning algorithms can do.</li>
+      <li>Capstone project: implement RL yourself to <strong>land a simulated moon lander</strong>.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key insight:</strong> Reinforcement learning is exciting precisely because it is new — the full range of what it can do is still being discovered.
+    </div>
+  </div>
+
+  <!-- 5. What is Clustering? -->
+  <div class="card">
+    <h2><span class="icon">🔵</span> What is Clustering?</h2>
+    <ul>
+      <li>A <span class="term">clustering algorithm</span> looks at a number of data points and automatically finds data points that are <strong>related or similar</strong> to each other.</li>
+      <li>It is an <em>unsupervised</em> learning algorithm — the dataset contains only inputs <strong>x</strong>, with no labels <strong>y</strong>.</li>
+      <li>Because there are no target labels, we cannot tell the algorithm what the "right answer" is — instead, we ask it to <em>find interesting structure</em> in the data.</li>
+      <li>Clustering looks for one specific type of structure: groups of points (clusters) that are similar to each other.</li>
+    </ul>
+  </div>
+
+  <!-- 6. Supervised vs. Unsupervised Learning -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Supervised vs. Unsupervised Learning</h2>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Supervised Learning</th>
+          <th>Unsupervised Learning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Training data</strong></td>
+          <td>Input features <em>x</em> <strong>and</strong> labels <em>y</em></td>
+          <td>Input features <em>x</em> only — <strong>no labels</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Plot appearance</strong></td>
+          <td>Two classes shown with distinct markers (×  and ○)</td>
+          <td>Just dots — no class distinction visible</td>
+        </tr>
+        <tr>
+          <td><strong>Algorithm goal</strong></td>
+          <td>Learn a decision boundary (e.g. logistic regression, neural network)</td>
+          <td>Discover structure or clusters in the data</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. Applications of Clustering -->
+  <div class="card">
+    <h2><span class="icon">🌐</span> Applications of Clustering</h2>
+    <ul>
+      <li><strong>News article grouping</strong> — grouping similar news stories together (e.g. all articles about pandas).</li>
+      <li><strong>Market segmentation</strong> — at deeplearning.ai, clustering revealed distinct learner groups: those wanting to grow skills, advance careers, or stay updated with AI in their field.</li>
+      <li><strong>DNA data analysis</strong> — grouping individuals by genetic expression data to find people with similar traits.</li>
+      <li><strong>Astronomy</strong> — grouping bodies in space to identify galaxies or other coherent structures; one of the most fascinating real-world uses of clustering.</li>
+    </ul>
+    <div class="callout">
+      <strong>Next up:</strong> The most commonly used clustering algorithm — the <span class="term">K-means algorithm</span>.
+    </div>
+  </div>
+
+  <!-- 8. K-Means: Overview -->
+  <div class="card">
+    <h2><span class="icon">📍</span> K-Means Clustering — Overview</h2>
+    <ul>
+      <li>Given an unlabelled dataset (e.g. 30 points), K-means tries to find a specified number of clusters <strong>K</strong>.</li>
+      <li>The algorithm repeatedly performs <strong>two steps</strong> until convergence:
+        <ol>
+          <li><span class="term">Assign</span> every point to its nearest cluster centroid.</li>
+          <li><span class="term">Move</span> each cluster centroid to the mean (average position) of all points assigned to it.</li>
+        </ol>
+      </li>
+      <li>The centers of the clusters are called <span class="term">cluster centroids</span>.</li>
+    </ul>
+    <div class="callout">
+      <strong>Key idea:</strong> K-means alternates between assigning points to centroids and moving centroids to the mean of their assigned points — repeating until nothing changes.
+    </div>
+  </div>
+
+  <!-- 9. K-Means: Step-by-Step -->
+  <div class="card">
+    <h2><span class="icon">🔄</span> K-Means: Step-by-Step Walkthrough</h2>
+    <ul>
+      <li><strong>Initialisation:</strong> Randomly place K cluster centroids (e.g. a red cross and a blue cross). These are just starting guesses — not necessarily good ones.</li>
+      <li><strong>Step 1 — Assign points:</strong> For each data point, check which centroid it is closest to and assign it to that cluster (illustrated by colouring the point red or blue).</li>
+      <li><strong>Step 2 — Move centroids:</strong> Look at all red points and compute their average location; move the red centroid there. Do the same for all blue points.</li>
+      <li><strong>Repeat:</strong> With the centroids in new positions, reassign all points again. Some points may switch colour because the centroids have moved.</li>
+      <li><strong>Convergence:</strong> Keep repeating Steps 1 and 2 until no point changes its cluster assignment and no centroid moves. At that point, K-means has <span class="term">converged</span>.</li>
+    </ul>
+    <div class="callout">
+      <strong>Convergence condition:</strong> The algorithm has converged when applying both steps results in <em>no further changes</em> to point assignments or centroid locations.
+    </div>
+  </div>
+
+  <!-- 10. K-Means: Formal Algorithm -->
+  <div class="card">
+    <h2><span class="icon">📐</span> K-Means: Formal Algorithm</h2>
+    <ul>
+      <li><strong>Initialisation:</strong> Randomly pick K cluster centroids μ<sub>1</sub>, μ<sub>2</sub>, …, μ<sub>K</sub>. Each μ<sub>k</sub> is a vector with the same dimension <em>n</em> as the training examples.</li>
+      <li><strong>Step 1 — Assign points:</strong> For each training example x<sup>(i)</sup> (i = 1 … m), set c<sup>(i)</sup> = index k (1 … K) of the closest centroid:
+        <br><br>
+        <code>c<sup>(i)</sup> = argmin<sub>k</sub> ‖x<sup>(i)</sup> − μ<sub>k</sub>‖²</code>
+        <br><br>
+        Minimising the <strong>squared distance</strong> (L2 norm squared) is equivalent to minimising the distance and is more convenient to implement.
+      </li>
+      <li><strong>Step 2 — Move centroids:</strong> For each cluster k, update μ<sub>k</sub> to the mean of all training examples assigned to it:
+        <br><br>
+        <code>μ<sub>k</sub> = average of all x<sup>(i)</sup> where c<sup>(i)</sup> = k</code>
+        <br><br>
+        e.g. if cluster 1 has examples 1, 5, 6, 10 assigned to it: μ<sub>1</sub> = (x<sup>(1)</sup> + x<sup>(5)</sup> + x<sup>(6)</sup> + x<sup>(10)</sup>) / 4
+      </li>
+      <li><strong>Repeat</strong> Steps 1 and 2 until convergence (no assignments or centroid positions change).</li>
+    </ul>
+    <div class="callout">
+      <strong>Note:</strong> μ<sub>k</sub> always has the same dimensionality as the training data — if each x has <em>n</em> features, so does each centroid.
+    </div>
+  </div>
+
+  <!-- 11. Corner Cases & Practical Notes -->
+  <div class="card">
+    <h2><span class="icon">⚠️</span> Corner Cases &amp; Practical Notes</h2>
+    <ul>
+      <li><strong>Empty cluster:</strong> If a cluster ends up with zero points assigned to it, computing its mean is undefined. Two options:
+        <ul>
+          <li><em>Most common:</em> Eliminate that cluster — you end up with K − 1 clusters.</li>
+          <li><em>Alternative:</em> Randomly re-initialise that centroid and try again.</li>
+        </ul>
+      </li>
+      <li><strong>Non-separated clusters:</strong> K-means works fine even when clusters are <em>not</em> visually distinct. Example: sizing t-shirts (S/M/L) from a continuous height/weight dataset — K-means still finds useful groupings even without clear gaps in the data.</li>
+      <li>The cluster centroids from such a run give you a sense of the most <strong>representative</strong> point in each group (e.g. the ideal body dimensions to design each t-shirt size around).</li>
+    </ul>
+  </div>
+
+  <!-- 12. Why Does K-Means Converge? -->
+  <div class="card">
+    <h2><span class="icon">📉</span> Why Does K-Means Converge?</h2>
+    <ul>
+      <li>K-means is not just a heuristic loop — it is actually <strong>optimising a cost function</strong> at every step.</li>
+      <li>Each of the two steps either decreases the cost or keeps it the same — it can never increase it.</li>
+      <li>Because the cost is bounded below (it cannot go negative), the algorithm is guaranteed to <span class="term">converge</span> and will not run forever.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> The specific cost function K-means optimises — the <span class="term">distortion function</span> — and how understanding it helps us run K-means better.
+    </div>
+  </div>
+
+  <!-- 13. K-Means Cost Function (Distortion) -->
+  <div class="card">
+    <h2><span class="icon">💰</span> K-Means Cost Function — The Distortion</h2>
+    <ul>
+      <li>Like supervised learning algorithms, K-means optimises a <strong>cost function J</strong> — but it uses its own two-step algorithm rather than gradient descent.</li>
+      <li><strong>Notation recap:</strong>
+        <ul>
+          <li>c<sup>(i)</sup> — index (1 … K) of the cluster to which training example x<sup>(i)</sup> is currently assigned.</li>
+          <li>μ<sub>k</sub> — location (vector) of cluster centroid k.</li>
+          <li>μ<sub>c<sup>(i)</sup></sub> — the centroid of the cluster that example x<sup>(i)</sup> has been assigned to.</li>
+        </ul>
+      </li>
+      <li><strong>Cost function (distortion):</strong>
+        <br><br>
+        <code>J(c<sup>(1)</sup>…c<sup>(m)</sup>, μ<sub>1</sub>…μ<sub>K</sub>) = (1/m) Σ ‖x<sup>(i)</sup> − μ<sub>c<sup>(i)</sup></sub>‖²</code>
+        <br><br>
+        The average squared distance between every training example and the centroid it has been assigned to.
+      </li>
+      <li>This cost function is also called the <span class="term">distortion function</span> in the literature.</li>
+    </ul>
+    <div class="callout">
+      <strong>Visually:</strong> J is computed by measuring the distance from every point to its assigned centroid, squaring each distance, and averaging them all. A lower J means tighter, better-fit clusters.
+    </div>
+  </div>
+
+  <!-- 14. Why Each Step Minimises J -->
+  <div class="card">
+    <h2><span class="icon">🧮</span> Why Each Step Minimises J</h2>
+    <ul>
+      <li><strong>Step 1 — Assign points (update c<sup>(i)</sup>):</strong> Holding the centroids μ fixed, assigning each x<sup>(i)</sup> to the <em>nearest</em> centroid minimises the term ‖x<sup>(i)</sup> − μ<sub>c<sup>(i)</sup></sub>‖² for that point. Any other assignment would only make the distance larger.</li>
+      <li><strong>Step 2 — Move centroids (update μ<sub>k</sub>):</strong> Holding assignments c<sup>(i)</sup> fixed, the value of μ<sub>k</sub> that minimises the average squared distance to all assigned points is exactly their <strong>mean</strong>.
+        <ul>
+          <li>Example: two points at positions 1 and 11. Centroid at 1 → avg sq. distance = 41. Centroid at mean (6) → avg sq. distance = 25. The mean is always optimal.</li>
+        </ul>
+      </li>
+    </ul>
+    <div class="callout">
+      <strong>Key insight:</strong> Every single iteration of K-means either decreases J or keeps it the same — it can <em>never</em> increase. This is why convergence is guaranteed.
+    </div>
+  </div>
+
+  <!-- 15. Convergence & Debugging -->
+  <div class="card">
+    <h2><span class="icon">🛑</span> Convergence &amp; Debugging Tips</h2>
+    <ul>
+      <li>If J <strong>ever goes up</strong> on an iteration, there is a <em>bug in the code</em> — this should be mathematically impossible.</li>
+      <li>If J <strong>stops decreasing</strong>, K-means has converged — you can safely stop.</li>
+      <li>If J is decreasing but <strong>very slowly</strong>, it is similar to gradient descent: you can choose to stop early if the rate of improvement is negligible.</li>
+      <li>Plotting J over iterations is a practical way to monitor whether the algorithm is working correctly and to detect convergence.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> Using <span class="term">multiple random initialisations</span> of cluster centroids to find better clusters and avoid poor local minima.
+    </div>
+  </div>
+
+  <!-- 16. Choosing the Number of Clusters K -->
+  <div class="card">
+    <h2><span class="icon">🔢</span> Choosing the Number of Clusters K</h2>
+    <ul>
+      <li>K is a required input to K-means, but for many datasets the right value is <strong>truly ambiguous</strong> — different people looking at the same data may reasonably see 2 or 4 clusters, and both could be correct.</li>
+      <li>Because there are no labels in unsupervised learning, there is no ground truth to compare against.</li>
+      <li><strong>What does NOT work:</strong> Choosing K to minimise J — more clusters always reduces J, so this approach would almost always push you toward the largest possible K.</li>
+    </ul>
+  </div>
+
+  <!-- 17. The Elbow Method -->
+  <div class="card">
+    <h2><span class="icon">💪</span> The Elbow Method</h2>
+    <ul>
+      <li>Run K-means for a range of K values and plot the distortion J against K.</li>
+      <li>If the curve has a clear <span class="term">elbow</span> — a point where J drops sharply then levels off — choose that K (e.g. K = 3 if the rapid decrease stops there).</li>
+      <li><strong>Limitation:</strong> In practice, many cost-function curves decrease smoothly with no clear elbow, making the method unreliable. It is mentioned here because you will encounter it in the literature, but it is not widely recommended.</li>
+    </ul>
+  </div>
+
+  <!-- 18. Choosing K via Downstream Purpose -->
+  <div class="card">
+    <h2><span class="icon">🎯</span> Choosing K via Downstream Purpose (Recommended)</h2>
+    <ul>
+      <li>The most practical approach: evaluate K-means based on how well its output serves the <strong>later downstream task</strong> it feeds into.</li>
+      <li><strong>T-shirt sizing example:</strong>
+        <ul>
+          <li>K = 3 → S, M, L — simpler, cheaper to manufacture and ship.</li>
+          <li>K = 5 → XS, S, M, L, XL — better fit for customers, but higher production costs.</li>
+          <li>Both are valid clusterings; the business trade-off (fit quality vs. cost) determines the right K.</li>
+        </ul>
+      </li>
+      <li><strong>Image compression example:</strong> K-means can compress images by reducing the number of colours. Higher K → better image quality but larger file size. You choose K based on the acceptable trade-off between quality and compression.</li>
+    </ul>
+    <div class="callout">
+      <strong>Recommended approach:</strong> Run K-means with a few values of K, then pick the one that makes the most sense in the context of what you will actually do with the clusters.
+    </div>
+  </div>
+
+  <!-- 19. Up Next — Anomaly Detection -->
+  <div class="card">
+    <h2><span class="icon">🚨</span> Up Next — Anomaly Detection</h2>
+    <ul>
+      <li>The second unsupervised learning algorithm covered in this course.</li>
+      <li>Goal: look at a dataset and automatically identify <strong>unusual or anomalous</strong> data points.</li>
+      <li>One of the most <em>commercially important</em> applications of unsupervised learning, used across many industries.</li>
+    </ul>
+  </div>
+
+  <!-- 20. Anomaly Detection — Introduction -->
+  <div class="card">
+    <h2><span class="icon">🚨</span> Anomaly Detection — Introduction</h2>
+    <ul>
+      <li>An anomaly detection algorithm looks at an <strong>unlabelled dataset of normal events</strong> and learns to raise a red flag when an unusual or anomalous event occurs.</li>
+      <li><strong>Motivating example — aircraft engines:</strong>
+        <ul>
+          <li>After an engine rolls off the assembly line, features are computed: x<sub>1</sub> = heat generated, x<sub>2</sub> = vibration intensity.</li>
+          <li>Most manufactured engines are fine, so the dataset is mostly normal examples.</li>
+          <li>Given a new engine x<sub>test</sub>, the question is: does it look similar to engines seen before, or is something unusual about it?</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 21. Density Estimation -->
+  <div class="card">
+    <h2><span class="icon">📊</span> Density Estimation</h2>
+    <ul>
+      <li>The most common approach to anomaly detection is <span class="term">density estimation</span>.</li>
+      <li>Given a training set of m examples, the algorithm builds a <strong>model for p(x)</strong> — the probability of seeing a particular set of feature values.</li>
+      <li>Regions dense with training examples get <em>high</em> probability; sparse outer regions get <em>low</em> probability.</li>
+      <li><strong>Decision rule:</strong>
+        <ul>
+          <li>If p(x<sub>test</sub>) &lt; ε → flag as <strong>anomaly</strong> (the point lands in a low-probability region).</li>
+          <li>If p(x<sub>test</sub>) ≥ ε → <strong>okay</strong>, looks similar to normal examples.</li>
+        </ul>
+      </li>
+      <li>ε (epsilon) is a small threshold you choose — think of it as "how unlikely is too unlikely."</li>
+    </ul>
+    <div class="callout">
+      <strong>Key idea:</strong> An anomaly is not just a data point far from the centre — it is a data point in a region the model considers <em>very unlikely</em> given the training data.
+    </div>
+  </div>
+
+  <!-- 22. Applications of Anomaly Detection -->
+  <div class="card">
+    <h2><span class="icon">🌐</span> Applications of Anomaly Detection</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Domain</th>
+          <th>Features (examples)</th>
+          <th>What it detects</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fraud detection</strong></td>
+          <td>Login frequency, pages visited, transaction count, typing speed</td>
+          <td>Unusual user behaviour → trigger extra security checks (e.g. phone verification)</td>
+        </tr>
+        <tr>
+          <td><strong>Manufacturing</strong></td>
+          <td>Heat, vibration, electrical properties of parts</td>
+          <td>Defective engines, circuit boards, smartphones, motors before they ship</td>
+        </tr>
+        <tr>
+          <td><strong>Data centre monitoring</strong></td>
+          <td>Memory usage, disk accesses/sec, CPU load, CPU-to-network-traffic ratio</td>
+          <td>Failing hard drives, network cards, or compromised machines</td>
+        </tr>
+        <tr>
+          <td><strong>Telecommunications</strong></td>
+          <td>Cell tower behaviour metrics</td>
+          <td>Towers behaving unusually → dispatch a technician</td>
+        </tr>
+        <tr>
+          <td><strong>Financial fraud</strong></td>
+          <td>Purchase patterns, transaction amounts</td>
+          <td>Unusual sequences of purchases worth flagging for review</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Note:</strong> Anomaly detection typically does <em>not</em> automatically block or close an account. Instead, it flags the case for a human or a secondary security step to review.
+    </div>
+  </div>
+
+  <!-- 23. The Gaussian (Normal) Distribution -->
+  <div class="card">
+    <h2><span class="icon">🔔</span> The Gaussian (Normal) Distribution</h2>
+    <ul>
+      <li><span class="term">Gaussian distribution</span>, <span class="term">normal distribution</span>, and <span class="term">bell-shaped curve</span> all refer to the same thing.</li>
+      <li>If x is a random variable distributed as a Gaussian with mean <strong>μ</strong> and variance <strong>σ²</strong>, then its probability is given by:
+        <br><br>
+        <code>p(x) = (1 / √(2π) · σ) · exp(−(x − μ)² / 2σ²)</code>
+        <br><br>
+      </li>
+      <li><strong>Parameters:</strong>
+        <ul>
+          <li><span class="term">μ (mu)</span> — the mean; controls the <em>centre</em> of the curve.</li>
+          <li><span class="term">σ (sigma)</span> — the standard deviation; controls the <em>width</em> of the curve.</li>
+          <li><span class="term">σ² (sigma squared)</span> — the variance.</li>
+        </ul>
+      </li>
+      <li>The area under the curve always equals 1 (probabilities must sum to one), so a narrower/taller curve and a wider/shorter curve are equivalent in total area.</li>
+    </ul>
+  </div>
+
+  <!-- 24. Effect of μ and σ on the Gaussian -->
+  <div class="card">
+    <h2><span class="icon">📈</span> Effect of μ and σ on the Gaussian</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>μ</th>
+          <th>σ</th>
+          <th>Shape</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0</td>
+          <td>1</td>
+          <td>Centred at 0, standard width — the standard normal distribution.</td>
+        </tr>
+        <tr>
+          <td>0</td>
+          <td>0.5</td>
+          <td>Centred at 0, <em>narrower and taller</em> (σ² = 0.25).</td>
+        </tr>
+        <tr>
+          <td>0</td>
+          <td>2</td>
+          <td>Centred at 0, <em>wider and shorter</em> (σ² = 4).</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>0.5</td>
+          <td>Shifted right to centre at 3, same width as σ = 0.5 case above.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Rule of thumb:</strong> μ moves the curve left/right; σ stretches or squishes it. A wider curve must be shorter to keep the total area = 1.
+    </div>
+  </div>
+
+  <!-- 25. Estimating μ and σ² from Data -->
+  <div class="card">
+    <h2><span class="icon">🧮</span> Estimating μ and σ² from Data</h2>
+    <ul>
+      <li>Given a training set of m scalar examples, estimate the parameters as follows:
+        <br><br>
+        <code>μ = (1/m) Σ x<sup>(i)</sup></code>
+        <br><br>
+        <code>σ² = (1/m) Σ (x<sup>(i)</sup> − μ)²</code>
+        <br><br>
+      </li>
+      <li>These are the <span class="term">maximum likelihood estimates</span> for μ and σ.</li>
+      <li>Some statistics texts use <code>1/(m−1)</code> instead of <code>1/m</code> for σ² — in practice the difference is negligible. Using <code>1/m</code> is standard in ML.</li>
+      <li>Once μ and σ² are estimated, you have a fitted Gaussian that describes how likely any value of x is given the training data.</li>
+    </ul>
+    <div class="callout">
+      <strong>Anomaly detection link:</strong> A point near the centre of the fitted Gaussian has high p(x) → normal. A point far from the centre has low p(x) → potential anomaly.
+    </div>
+  </div>
+
+  <!-- 26. Anomaly Detection Algorithm with Multiple Features -->
+  <div class="card">
+    <h2><span class="icon">🔢</span> Anomaly Detection with Multiple Features</h2>
+    <ul>
+      <li>Training set: x<sup>(1)</sup> … x<sup>(m)</sup>, where each example x is a vector of <strong>n features</strong>.</li>
+      <li>Model p(x) as the <strong>product of individual feature probabilities</strong>:
+        <br><br>
+        <code>p(x) = p(x<sub>1</sub>; μ<sub>1</sub>, σ<sub>1</sub>²) × p(x<sub>2</sub>; μ<sub>2</sub>, σ<sub>2</sub>²) × … × p(x<sub>n</sub>; μ<sub>n</sub>, σ<sub>n</sub>²)</code>
+        <br><br>
+        Or more compactly: <code>p(x) = ∏<sub>j=1</sub><sup>n</sup> p(x<sub>j</sub>; μ<sub>j</sub>, σ<sub>j</sub>²)</code>
+      </li>
+      <li>This assumes the features are <span class="term">statistically independent</span>, though the algorithm works well in practice even when they are not.</li>
+      <li><strong>Why multiply probabilities?</strong> If there is a 1/10 chance an engine runs very hot, and a 1/20 chance it vibrates very hard, the chance of both happening is 1/10 × 1/20 = 1/200 — very unlikely, and therefore anomalous.</li>
+    </ul>
+  </div>
+
+  <!-- 27. Building the Anomaly Detection Model -->
+  <div class="card">
+    <h2><span class="icon">🛠️</span> Building the Model — Step by Step</h2>
+    <ol>
+      <li><strong>Choose features</strong> x<sub>j</sub> that might be indicative of anomalous behaviour.</li>
+      <li><strong>Fit parameters</strong> for each feature j = 1 … n from the training set:
+        <br><br>
+        <code>μ<sub>j</sub> = (1/m) Σ x<sub>j</sub><sup>(i)</sup></code>
+        <br><br>
+        <code>σ<sub>j</sub>² = (1/m) Σ (x<sub>j</sub><sup>(i)</sup> − μ<sub>j</sub>)²</code>
+        <br><br>
+        Vectorised: <code>μ = (1/m) Σ x<sup>(i)</sup></code> (computes all μ<sub>j</sub> at once).
+      </li>
+      <li><strong>Given a new example x</strong>, compute p(x):
+        <br><br>
+        <code>p(x) = ∏<sub>j=1</sub><sup>n</sup> (1 / √(2π) σ<sub>j</sub>) · exp(−(x<sub>j</sub> − μ<sub>j</sub>)² / 2σ<sub>j</sub>²)</code>
+      </li>
+      <li><strong>Flag as anomaly</strong> if p(x) &lt; ε.</li>
+    </ol>
+    <div class="callout">
+      <strong>Intuition:</strong> The algorithm flags an example as anomalous if <em>one or more</em> features are unusually large or small. Even a single very unlikely feature value makes the whole product p(x) very small.
+    </div>
+  </div>
+
+  <!-- 28. Worked Example -->
+  <div class="card">
+    <h2><span class="icon">✏️</span> Worked Example (2 Features)</h2>
+    <ul>
+      <li>Dataset with features x<sub>1</sub> (wide range) and x<sub>2</sub> (narrow range). Fitted parameters:
+        <ul>
+          <li>μ<sub>1</sub> = 5, σ<sub>1</sub> = 2</li>
+          <li>μ<sub>2</sub> = 3, σ<sub>2</sub> = 1</li>
+        </ul>
+      </li>
+      <li>Multiplying p(x<sub>1</sub>) × p(x<sub>2</sub>) produces a 3-D surface — highest in the centre of the training data, falling off toward the edges.</li>
+      <li>With ε = 0.02:
+        <ul>
+          <li><strong>x<sub>test 1</sub></strong> (near the centre): p(x) ≈ 0.4 → <strong>0.4 ≥ ε → OK, not an anomaly.</strong></li>
+          <li><strong>x<sub>test 2</sub></strong> (x<sub>1</sub> ≈ 8, x<sub>2</sub> ≈ 0.5, far from training data): p(x) ≈ 0.0021 → <strong>0.0021 &lt; ε → flagged as anomaly.</strong></li>
+        </ul>
+      </li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> How to choose ε and evaluate whether your anomaly detection system is working well.
+    </div>
+  </div>
+
+  <!-- 29. Evaluating an Anomaly Detection System -->
+  <div class="card">
+    <h2><span class="icon">📋</span> Evaluating an Anomaly Detection System</h2>
+    <ul>
+      <li>Making decisions about features or ε is much easier if you have a <span class="term">real number evaluation</span> — a single metric that tells you if a change made the algorithm better or worse.</li>
+      <li>Even though anomaly detection is unsupervised, a <strong>small number of labelled anomalies</strong> (y = 1) are very useful for evaluation. Normal examples get y = 0.</li>
+      <li>The training set remains unlabelled — all examples are assumed normal (y = 0). The algorithm still fits Gaussian distributions on this set.</li>
+      <li>A small number of known anomalies are reserved for the <strong>cross-validation and test sets</strong>, which contain both y = 0 and y = 1 examples.</li>
+    </ul>
+  </div>
+
+  <!-- 30. Dataset Splitting for Anomaly Detection -->
+  <div class="card">
+    <h2><span class="icon">✂️</span> Dataset Splitting</h2>
+    <ul>
+      <li><strong>Typical split (aircraft engine example):</strong> 10,000 good engines + 20 known anomalies.
+        <ul>
+          <li><strong>Training set:</strong> 6,000 good engines (y = 0 only).</li>
+          <li><strong>Cross-validation set:</strong> 2,000 good + 10 anomalous engines.</li>
+          <li><strong>Test set:</strong> 2,000 good + 10 anomalous engines.</li>
+        </ul>
+      </li>
+      <li><strong>Alternative — no test set:</strong> If anomalies are very few (e.g. only 2), put all anomalies into the cross-validation set and skip the test set entirely.
+        <ul>
+          <li>Downside: no fair way to estimate real-world performance; higher risk of over-fitting ε and feature choices to the CV set.</li>
+        </ul>
+      </li>
+      <li>A few anomalies accidentally included in the training set will not significantly harm the algorithm.</li>
+    </ul>
+  </div>
+
+  <!-- 31. Evaluation Procedure & Metrics -->
+  <div class="card">
+    <h2><span class="icon">📐</span> Evaluation Procedure &amp; Metrics</h2>
+    <ul>
+      <li><strong>Procedure:</strong>
+        <ol>
+          <li>Fit model p(x) on the training set (fit all Gaussians).</li>
+          <li>On each CV / test example, predict y = 1 (anomaly) if p(x) &lt; ε, else y = 0.</li>
+          <li>Compare predictions to the known labels y in the CV / test set.</li>
+        </ol>
+      </li>
+      <li><strong>Metrics:</strong> Because anomalies are rare (heavily skewed classes — e.g. 10 positives vs. 2,000 negatives), plain accuracy is misleading. Prefer:
+        <ul>
+          <li>True positive / false positive / false negative / true negative rates.</li>
+          <li><span class="term">Precision</span>, <span class="term">Recall</span>, and <span class="term">F₁ score</span>.</li>
+        </ul>
+      </li>
+      <li>Use the CV set to tune ε: raise it to catch more anomalies; lower it to reduce false alarms on normal examples.</li>
+    </ul>
+    <div class="callout">
+      <strong>Coming next:</strong> If you have some labelled anomalies, why not just use a supervised learning algorithm? The next section compares anomaly detection vs. supervised learning and when to prefer each.
+    </div>
+  </div>
+
+  <!-- 32. Anomaly Detection vs. Supervised Learning -->
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Anomaly Detection vs. Supervised Learning</h2>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Anomaly Detection</th>
+          <th>Supervised Learning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Positive examples (y=1)</strong></td>
+          <td>Very few — 0 to ~20 is common</td>
+          <td>Enough to give the algorithm a sense of what positives look like</td>
+        </tr>
+        <tr>
+          <td><strong>Negative examples (y=0)</strong></td>
+          <td>Large set — used to model p(x)</td>
+          <td>Large set used in training alongside positives</td>
+        </tr>
+        <tr>
+          <td><strong>What it learns</strong></td>
+          <td>What <em>normal</em> looks like; flags anything that deviates</td>
+          <td>What <em>positive examples</em> look like; flags things similar to past positives</td>
+        </tr>
+        <tr>
+          <td><strong>Future anomalies</strong></td>
+          <td>Can detect brand-new, never-seen types of anomaly</td>
+          <td>Assumes future positives are similar to those in the training set</td>
+        </tr>
+        <tr>
+          <td><strong>Where positives are used</strong></td>
+          <td>Only in CV and test sets for tuning ε</td>
+          <td>Directly in training</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 33. When to Use Each -->
+  <div class="card">
+    <h2><span class="icon">🗺️</span> When to Use Each — Examples</h2>
+    <ul>
+      <li><strong>Use anomaly detection when:</strong>
+        <ul>
+          <li>There are many different, unpredictable ways for something to go wrong.</li>
+          <li>New types of anomalies may appear in the future that were never seen during training.</li>
+          <li>You have very few labelled positive examples to learn from.</li>
+        </ul>
+      </li>
+      <li><strong>Use supervised learning when:</strong>
+        <ul>
+          <li>You have a reasonable number of positive examples to train on.</li>
+          <li>Future positives are expected to look similar to past ones.</li>
+          <li>The output labels repeat reliably over time.</li>
+        </ul>
+      </li>
+    </ul>
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Preferred Approach</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Financial fraud (new schemes)</td>
+          <td>Anomaly detection</td>
+          <td>New fraud types emerge constantly; can't rely on past positives</td>
+        </tr>
+        <tr>
+          <td>Email spam detection</td>
+          <td>Supervised learning</td>
+          <td>Spam is repetitive — future spam resembles past spam</td>
+        </tr>
+        <tr>
+          <td>Manufacturing — new/unseen defects</td>
+          <td>Anomaly detection</td>
+          <td>Brand-new failure modes may arise with no prior examples</td>
+        </tr>
+        <tr>
+          <td>Manufacturing — known defects (e.g. scratches)</td>
+          <td>Supervised learning</td>
+          <td>Enough labelled scratch examples to train a classifier directly</td>
+        </tr>
+        <tr>
+          <td>Data centre / security monitoring</td>
+          <td>Anomaly detection</td>
+          <td>Hackers constantly find new attack methods unlike anything seen before</td>
+        </tr>
+        <tr>
+          <td>Weather prediction</td>
+          <td>Supervised learning</td>
+          <td>Fixed set of output labels (sunny, rainy, snow) seen repeatedly</td>
+        </tr>
+        <tr>
+          <td>Disease diagnosis (known disease)</td>
+          <td>Supervised learning</td>
+          <td>Training on known symptom patterns and seen diagnoses</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Key distinction:</strong> Anomaly detection flags things <em>unlike anything normal</em>. Supervised learning flags things <em>like the positives it has already seen</em>.
+    </div>
+  </div>
+
+  <!-- 34. Feature Engineering for Anomaly Detection -->
+  <div class="card">
+    <h2><span class="icon">🔧</span> Feature Engineering for Anomaly Detection</h2>
+    <ul>
+      <li>In supervised learning, the labelled signal y helps the algorithm figure out which features matter and how to re-scale them — so imperfect features are more forgivable.</li>
+      <li>In anomaly detection (unsupervised), the algorithm has no such signal, so <strong>carefully choosing features is even more important</strong>.</li>
+      <li><strong>Key goal:</strong> Give the algorithm features that take on unusually large or small values when something is anomalous.</li>
+    </ul>
+  </div>
+
+  <!-- 35. Making Features More Gaussian -->
+  <div class="card">
+    <h2><span class="icon">🔔</span> Making Features More Gaussian</h2>
+    <ul>
+      <li>Anomaly detection models each feature with a Gaussian — so features that are already roughly Gaussian give the best fit.</li>
+      <li>Plot a histogram of each feature. If the distribution looks skewed or non-symmetric, apply a transformation to make it more bell-shaped before training.</li>
+      <li><strong>Common transformations to try:</strong>
+        <ul>
+          <li><code>log(x)</code> or <code>log(x + c)</code> — good for right-skewed data. If x has zeros, use a small constant c (e.g. 0.001) to avoid log(0).</li>
+          <li><code>x<sup>0.5</sup></code> (square root), <code>x<sup>0.4</sup></code>, or other fractional powers.</li>
+          <li><code>x<sup>1/3</sup></code> (cube root).</li>
+          <li>More generally: <code>x<sup>p</sup></code> — adjust the exponent p until the histogram looks symmetric.</li>
+        </ul>
+      </li>
+      <li>Try a few values of the transformation parameter, plot the histogram each time, and pick the one that looks most Gaussian — no need to be mathematically precise.</li>
+    </ul>
+    <div class="callout">
+      <strong>Important:</strong> Whatever transformation you apply to the training set, apply the <em>exact same transformation</em> to your cross-validation and test sets.
+    </div>
+  </div>
+
+  <!-- 36. Error Analysis for Anomaly Detection -->
+  <div class="card">
+    <h2><span class="icon">🔍</span> Error Analysis for Anomaly Detection</h2>
+    <ul>
+      <li>After training, evaluate on the cross-validation set. If the algorithm misses anomalies, perform <span class="term">error analysis</span>:
+        <ol>
+          <li>Look at the anomalous examples that the algorithm <em>failed to flag</em>.</li>
+          <li>Ask: what makes this example anomalous even though its current features look normal?</li>
+          <li>Try to identify a <strong>new feature</strong> that takes on an unusually large or small value for that example.</li>
+          <li>Add the new feature and retrain.</li>
+        </ol>
+      </li>
+      <li><strong>Target:</strong> p(x) should be large (≥ ε) for normal examples and small (&lt; ε) for anomalous ones. The most common failure mode is p(x) being large for <em>both</em>.</li>
+    </ul>
+  </div>
+
+  <!-- 37. Creating New Features by Combining Old Ones -->
+  <div class="card">
+    <h2><span class="icon">⚙️</span> Creating New Features by Combining Old Ones</h2>
+    <ul>
+      <li>Sometimes an anomaly is not unusual on any single feature but is unusual on a <em>combination</em> of features.</li>
+      <li><strong>Data-centre monitoring example:</strong>
+        <ul>
+          <li>Base features: memory use (x<sub>1</sub>), disk accesses/sec (x<sub>2</sub>), CPU load (x<sub>3</sub>), network traffic (x<sub>4</sub>).</li>
+          <li>A machine with <em>high CPU load but very low network traffic</em> is anomalous for a video-streaming server — but neither feature alone looks unusual.</li>
+          <li>Fix: add <code>x<sub>5</sub> = CPU load / network traffic</code>. This new ratio spikes for exactly that failure mode and is easy for the algorithm to flag.</li>
+          <li>Can also try: <code>x<sub>6</sub> = (CPU load)² / network traffic</code> or other combinations.</li>
+        </ul>
+      </li>
+      <li><strong>Fraud detection example:</strong> A user's transaction count (x<sub>1</sub>) may look normal, but adding typing speed (x<sub>2</sub>) — which is extreme for that user — makes the anomaly obvious in 2-D feature space.</li>
+    </ul>
+    <div class="callout">
+      <strong>Workflow:</strong> Train → find missed anomalies on CV set → inspect them → create new features → retrain → repeat.
+    </div>
+  </div>
+
+  <footer>
+    Machine Learning Specialization · Unsupervised Learning · Notes compiled March 2026
+  </footer>
+
+</div>
+</body>
+</html>
